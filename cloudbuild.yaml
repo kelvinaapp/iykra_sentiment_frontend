@@ -1,11 +1,11 @@
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/iykra-437909/iykra-sentimen-frontend', '.']
+    args: ['build', '-t', 'gcr.io/iykra-437909/iykra-sentiment-frontend-app', '.']
 
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/iykra-437909/iykra-sentimen-frontend']
+    args: ['push', 'gcr.io/iykra-437909/iykra-sentiment-frontend-app']
 
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -13,27 +13,17 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'alpha-digital'
+      - 'iykra-sentiment-frontend-app'
       - '--image'
-      - 'gcr.io/iykra-437909/iykra-sentimen-frontend'
+      - 'gcr.io/iykra-437909/iykra-sentiment-frontend-app'
       - '--region'
-      - 'asia-southeast2'
+      - 'asia-southeast1'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-      - '--memory'
-      - '1Gi'
-      - '--cpu'
-      - '2'
-      - '--min-instances'
-      - '0'
-      - '--max-instances'
-      - '10'
-      - '--port'
-      - '8080'
 
 images:
-  - 'gcr.io/iykra-437909/iykra-sentimen-frontend'
+  - 'gcr.io/iykra-437909/iykra-sentiment-frontend-app'
 
 options:
   logging: CLOUD_LOGGING_ONLY
