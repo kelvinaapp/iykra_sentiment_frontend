@@ -21,11 +21,18 @@ FROM nginx:alpine
 # Copy built assets from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy nginx configuration if you have custom config
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Create nginx config to handle Cloud Run port requirements
+RUN echo 'server { \
+    listen 8080; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html index.htm; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
 
-# Expose port
-EXPOSE 80
+# Expose port 8080 instead of 80
+EXPOSE 8080
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
