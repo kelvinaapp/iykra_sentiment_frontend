@@ -1,342 +1,379 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, Grid, Paper } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  RadialLinearScale,
-} from 'chart.js';
-import { Bar, Line, Radar } from 'react-chartjs-2';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import PeopleIcon from '@mui/icons-material/People';
-import StarIcon from '@mui/icons-material/Star';
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend
-);
+const brandLogos = {
+  adidas: process.env.PUBLIC_URL + '/assets/brands/adidas.png',
+  nike: process.env.PUBLIC_URL + '/assets/brands/nike.png',
+  puma: process.env.PUBLIC_URL + '/assets/brands/puma.png',
+  reebok: process.env.PUBLIC_URL + '/assets/brands/reebok.png',
+  converse: process.env.PUBLIC_URL + '/assets/brands/converse.png',
+};
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  marginBottom: theme.spacing(1),
+  '& .MuiTable-root': {
+    backgroundColor: theme.palette.background.paper,
+    borderCollapse: 'separate',
+    borderSpacing: 0,
+    tableLayout: 'fixed',
+    width: '100%',
+  }
+}));
+
+const BrandLogo = styled('img')({
+  width: '24px',
+  height: '24px',
+  marginRight: '8px',
+  verticalAlign: 'middle',
+});
+
+const HeaderContent = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+const StyledTableCell = styled(TableCell)(({ theme, brand, isHeader, isMarketAvg }) => ({
+  padding: '8px 16px',
+  fontSize: 14,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  borderRight: `1px solid ${theme.palette.divider}`,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  width: brand ? '14%' : '16%',
+  textAlign: 'center',
+  '&:first-of-type': {
+    width: '20%',
+  },
+  '&:last-child': {
+    borderRight: 'none',
+  },
+  ...(isHeader && {
+    backgroundColor: theme.palette.grey[100],
+    fontWeight: 'bold',
+    color: theme.palette.text.primary,
+  }),
+  ...(isMarketAvg && {
+    position: 'relative',
+    background: 'linear-gradient(45deg, transparent 10px, #fff 10px)',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: '10px',
+      borderRight: `1px solid ${theme.palette.divider}`,
+    }
+  }),
+  ...(brand === 'adidas' && {
+    backgroundColor: 'rgba(66, 133, 244, 0.1)',
+  }),
+  ...(brand === 'nike' && {
+    backgroundColor: 'rgba(234, 67, 53, 0.1)',
+  }),
+  ...(brand === 'puma' && {
+    backgroundColor: 'rgba(251, 188, 4, 0.1)',
+  }),
+  ...(brand === 'reebok' && {
+    backgroundColor: 'rgba(52, 168, 83, 0.1)',
+  }),
+  ...(brand === 'converse' && {
+    backgroundColor: 'rgba(103, 58, 183, 0.1)',
+  }),
+}));
+
+const StyledTableRow = styled(TableRow)({
+  '& td, & th': {
+    width: '14%',
+    '&:first-of-type': {
+      width: '20%',
+    },
+  },
+});
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: '#fff',
-  backgroundColor: '#00695c',
+  backgroundColor: '#00897b',
+  color: theme.palette.common.white,
   padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
+  fontSize: '1.5rem',
+  fontWeight: 400,
+  marginBottom: theme.spacing(2),
 }));
 
-const ChartCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-  height: '100%',
-}));
-
-const MetricCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.primary.light,
-  color: theme.palette.primary.contrastText,
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.primary,
+  backgroundColor: theme.palette.grey[50],
+  padding: '8px 16px',
+  marginBottom: theme.spacing(0),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  fontWeight: 'bold',
 }));
 
 const CompetitorAnalysisDashboard = () => {
-  // Sample data for market share
-  const marketShareData = {
-    labels: ['Nike', 'Adidas', 'Puma'],
-    datasets: [{
-      label: 'Market Share (%)',
-      data: [45, 35, 20],
-      backgroundColor: ['#00695c', '#2196f3', '#ff9800'],
-    }],
-  };
+  const salesPerformanceData = [
+    {
+      metric: 'Order Value ($)',
+      marketAvg: 85,
+      adidas: 95,
+      nike: 90,
+      puma: 80,
+      reebok: 75,
+      converse: 70
+    },
+    {
+      metric: 'Return Rate (%)',
+      marketAvg: 5.5,
+      adidas: 4.8,
+      nike: 4.5,
+      puma: 5.9,
+      reebok: 6.1,
+      converse: 5.8
+    },
+    {
+      metric: 'Repeat Purchase Score',
+      marketAvg: 7.5,
+      adidas: 8.2,
+      nike: 8.5,
+      puma: 7.8,
+      reebok: 7.4,
+      converse: 7.1
+    }
+  ];
 
-  // Sample data for engagement rates
-  const engagementRateData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Nike',
-        data: [5.2, 5.5, 5.8, 6.0, 6.2, 6.5],
-        borderColor: '#00695c',
-        tension: 0.4,
-      },
-      {
-        label: 'Adidas',
-        data: [4.8, 5.0, 5.2, 5.4, 5.6, 5.8],
-        borderColor: '#2196f3',
-        tension: 0.4,
-      },
-      {
-        label: 'Puma',
-        data: [4.0, 4.2, 4.5, 4.7, 4.9, 5.1],
-        borderColor: '#ff9800',
-        tension: 0.4,
-      },
-    ],
-  };
+  const productPopularityData = [
+    {
+      metric: 'Number of Reviews (K)',
+      marketAvg: 100,
+      adidas: 150,
+      nike: 180,
+      puma: 85,
+      reebok: 90,
+      converse: 70
+    },
+    {
+      metric: 'Trending Score',
+      marketAvg: 7.0,
+      adidas: 8.5,
+      nike: 9.0,
+      puma: 7.5,
+      reebok: 7.2,
+      converse: 6.8
+    },
+    {
+      metric: 'Product Lifecycle Status',
+      marketAvg: 'Mature',
+      adidas: 'Growth',
+      nike: 'Growth',
+      puma: 'Mature',
+      reebok: 'Mature',
+      converse: 'Decline'
+    }
+  ];
 
-  // Sample data for sentiment comparison
-  const sentimentData = {
-    labels: ['Positive', 'Neutral', 'Negative'],
-    datasets: [
-      {
-        label: 'Nike',
-        data: [65, 25, 10],
-        backgroundColor: '#00695c',
-      },
-      {
-        label: 'Adidas',
-        data: [60, 28, 12],
-        backgroundColor: '#2196f3',
-      },
-      {
-        label: 'Puma',
-        data: [55, 30, 15],
-        backgroundColor: '#ff9800',
-      },
-    ],
-  };
+  const sentimentData = [
+    {
+      metric: 'Sentiment Score',
+      marketAvg: 7.5,
+      adidas: 8.2,
+      nike: 8.5,
+      puma: 7.8,
+      reebok: 7.4,
+      converse: 7.1
+    },
+    {
+      metric: 'Emotion Score',
+      marketAvg: 7.0,
+      adidas: 7.8,
+      nike: 8.0,
+      puma: 7.2,
+      reebok: 7.0,
+      converse: 6.8
+    },
+    {
+      metric: 'Helpful Votes (K)',
+      marketAvg: 50,
+      adidas: 75,
+      nike: 85,
+      puma: 45,
+      reebok: 40,
+      converse: 35
+    }
+  ];
 
-  // Sample data for campaign performance
-  const campaignPerformanceData = {
-    labels: ['Reach', 'Engagement', 'Conversion', 'Brand Awareness', 'Hashtag Usage', 'Influencer Impact'],
-    datasets: [
-      {
-        label: 'Nike',
-        data: [90, 85, 80, 88, 82, 87],
-        borderColor: '#00695c',
-        backgroundColor: 'rgba(0, 105, 92, 0.2)',
-      },
-      {
-        label: 'Adidas',
-        data: [85, 80, 75, 82, 78, 83],
-        borderColor: '#2196f3',
-        backgroundColor: 'rgba(33, 150, 243, 0.2)',
-      },
-      {
-        label: 'Puma',
-        data: [75, 70, 65, 72, 68, 73],
-        borderColor: '#ff9800',
-        backgroundColor: 'rgba(255, 152, 0, 0.2)',
-      },
-    ],
-  };
+  const socialMediaData = [
+    {
+      metric: 'Engagement Count (M)',
+      marketAvg: 2.5,
+      adidas: 3.8,
+      nike: 4.2,
+      puma: 2.1,
+      reebok: 1.8,
+      converse: 1.5
+    },
+    {
+      metric: 'Hashtag Trend Score',
+      marketAvg: 7.0,
+      adidas: 8.5,
+      nike: 9.0,
+      puma: 7.2,
+      reebok: 6.8,
+      converse: 6.5
+    }
+  ];
 
-  // Sample data for content strategy comparison
-  const contentStrategyData = {
-    labels: ['Images', 'Videos', 'Stories', 'Reels', 'Live Streams'],
-    datasets: [
-      {
-        label: 'Nike',
-        data: [85, 90, 75, 88, 70],
-        backgroundColor: '#00695c',
-      },
-      {
-        label: 'Adidas',
-        data: [80, 85, 70, 82, 65],
-        backgroundColor: '#2196f3',
-      },
-      {
-        label: 'Puma',
-        data: [70, 75, 65, 78, 60],
-        backgroundColor: '#ff9800',
-      },
-    ],
-  };
+  const demographicsData = [
+    {
+      metric: 'Primary Age Group',
+      marketAvg: '25-34',
+      adidas: '18-24',
+      nike: '18-24',
+      puma: '25-34',
+      reebok: '35-44',
+      converse: '18-24'
+    },
+    {
+      metric: 'Gender Ratio (M:F)',
+      marketAvg: '55:45',
+      adidas: '60:40',
+      nike: '58:42',
+      puma: '55:45',
+      reebok: '50:50',
+      converse: '45:55'
+    },
+    {
+      metric: 'Top Location',
+      marketAvg: 'US',
+      adidas: 'Europe',
+      nike: 'US',
+      puma: 'Europe',
+      reebok: 'US',
+      converse: 'US'
+    }
+  ];
+
+  const sustainabilityData = [
+    {
+      metric: 'Sustainability Score',
+      marketAvg: 7.0,
+      adidas: 8.5,
+      nike: 8.2,
+      puma: 7.8,
+      reebok: 7.2,
+      converse: 6.8
+    },
+    {
+      metric: 'Eco-Friendly Keywords (%)',
+      marketAvg: 15,
+      adidas: 25,
+      nike: 22,
+      puma: 18,
+      reebok: 15,
+      converse: 12
+    }
+  ];
+
+  const marketingData = [
+    {
+      metric: 'Marketing Budget (M$)',
+      marketAvg: 50,
+      adidas: 80,
+      nike: 100,
+      puma: 45,
+      reebok: 40,
+      converse: 35
+    },
+    {
+      metric: 'Campaign Reach (M)',
+      marketAvg: 25,
+      adidas: 40,
+      nike: 45,
+      puma: 22,
+      reebok: 20,
+      converse: 18
+    },
+    {
+      metric: 'Target Engagement (%)',
+      marketAvg: 65,
+      adidas: 75,
+      nike: 80,
+      puma: 68,
+      reebok: 62,
+      converse: 60
+    }
+  ];
+
+  const renderBrandHeader = (brand) => (
+    <HeaderContent>
+      <BrandLogo src={brandLogos[brand.toLowerCase()]} alt={`${brand} logo`} />
+      {brand}
+    </HeaderContent>
+  );
+
+  const renderTable = (title, data, showHeader = false) => (
+    <Box sx={{ mb: 1 }}>
+      <SectionTitle variant="h6">
+        {title}
+      </SectionTitle>
+      <StyledTableContainer component={Paper}>
+        <Table>
+          {showHeader && (
+            <TableHead>
+              <StyledTableRow>
+                <StyledTableCell isHeader>Metric</StyledTableCell>
+                <StyledTableCell isHeader>Market Average</StyledTableCell>
+                <StyledTableCell isHeader>{renderBrandHeader('Adidas')}</StyledTableCell>
+                <StyledTableCell isHeader>{renderBrandHeader('Nike')}</StyledTableCell>
+                <StyledTableCell isHeader>{renderBrandHeader('Puma')}</StyledTableCell>
+                <StyledTableCell isHeader>{renderBrandHeader('Reebok')}</StyledTableCell>
+                <StyledTableCell isHeader>{renderBrandHeader('Converse')}</StyledTableCell>
+              </StyledTableRow>
+            </TableHead>
+          )}
+          <TableBody>
+            {data.map((row) => (
+              <StyledTableRow key={row.metric}>
+                <StyledTableCell>{row.metric}</StyledTableCell>
+                <StyledTableCell isMarketAvg>{row.marketAvg}</StyledTableCell>
+                <StyledTableCell brand="adidas">{row.adidas}</StyledTableCell>
+                <StyledTableCell brand="nike">{row.nike}</StyledTableCell>
+                <StyledTableCell brand="puma">{row.puma}</StyledTableCell>
+                <StyledTableCell brand="reebok">{row.reebok}</StyledTableCell>
+                <StyledTableCell brand="converse">{row.converse}</StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StyledTableContainer>
+    </Box>
+    
+  );
 
   return (
     <Box sx={{ p: 3 }}>
-      <DashboardTitle variant="h5">
-        Competitive Analysis Snapshot
+      <DashboardTitle>
+        Competitor Analysis Dashboard
       </DashboardTitle>
 
-      {/* Overview Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={4}>
-          <MetricCard>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-              <TrendingUpIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Market Share</Typography>
-            </Box>
-            <Typography variant="h4">45%</Typography>
-            <Typography variant="body2">Leading the market</Typography>
-          </MetricCard>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <MetricCard>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-              <PeopleIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Engagement Rate</Typography>
-            </Box>
-            <Typography variant="h4">6.5%</Typography>
-            <Typography variant="body2">vs. Industry Avg: 4.2%</Typography>
-          </MetricCard>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <MetricCard>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-              <StarIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Brand Sentiment</Typography>
-            </Box>
-            <Typography variant="h4">85%</Typography>
-            <Typography variant="body2">Positive Mentions</Typography>
-          </MetricCard>
-        </Grid>
-      </Grid>
-
-      {/* Market Share Comparison */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Market Share Distribution
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Bar
-                  data={marketShareData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                      },
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        {/* Engagement Rate Trends */}
-        <Grid item xs={12} md={6}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Engagement Rate Comparison
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Line
-                  data={engagementRateData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        title: {
-                          display: true,
-                          text: 'Engagement Rate (%)'
-                        }
-                      }
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        {/* Sentiment Analysis */}
-        <Grid item xs={12} md={6}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Sentiment Comparison
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Bar
-                  data={sentimentData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        title: {
-                          display: true,
-                          text: 'Percentage (%)'
-                        }
-                      }
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        {/* Campaign Performance */}
-        <Grid item xs={12} md={6}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Campaign Performance Metrics
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Radar
-                  data={campaignPerformanceData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      r: {
-                        beginAtZero: true,
-                        max: 100,
-                      },
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        {/* Content Strategy Comparison */}
-        <Grid item xs={12}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Content Strategy Performance
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Bar
-                  data={contentStrategyData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        title: {
-                          display: true,
-                          text: 'Performance Score'
-                        }
-                      }
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-      </Grid>
+      {renderTable('Sales Performance', salesPerformanceData, true)}
+      {renderTable('Product Popularity and Lifecycle', productPopularityData)}
+      {renderTable('Customer Sentiment and Reviews', sentimentData)}
+      {renderTable('Social Media Presence', socialMediaData)}
+      {renderTable('Demographics', demographicsData)}
+      {renderTable('Sustainability', sustainabilityData)}
+      {renderTable('Marketing Campaign Effectiveness', marketingData)}
     </Box>
   );
 };

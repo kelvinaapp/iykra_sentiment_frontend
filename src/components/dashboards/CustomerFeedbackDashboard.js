@@ -477,7 +477,7 @@ const CustomerFeedbackDashboard = () => {
           <MetricCard elevation={2}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
               <RateReviewIcon sx={{mr: 1 }} />
-              <Typography variant="h6">Total Posts</Typography>
+              <Typography variant="h6">Total Products</Typography>
             </Box>
             <Typography variant="h4">{stats.totalPosts}</Typography>
           </MetricCard>

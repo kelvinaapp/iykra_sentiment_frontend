@@ -230,6 +230,24 @@ const SentimentDashboard = () => {
                 mb: 1,
               }}
             >
+              <PostAddIcon sx={{ mr: 1 }} />
+              <Typography variant="h6">Total Posts</Typography>
+            </Box>
+            <Typography variant="h4">
+              {overviewData.totalPosts.toLocaleString()}
+            </Typography>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <MetricCard>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 1,
+              }}
+            >
               <CommentIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Total Komentar</Typography>
             </Box>
@@ -248,26 +266,8 @@ const SentimentDashboard = () => {
                 mb: 1,
               }}
             >
-              <PostAddIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Total Postingan</Typography>
-            </Box>
-            <Typography variant="h4">
-              {overviewData.totalPosts.toLocaleString()}
-            </Typography>
-          </MetricCard>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <MetricCard>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mb: 1,
-              }}
-            >
               <ThumbUpIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Total Engagement</Typography>
+              <Typography variant="h6">Total Likes</Typography>
             </Box>
             <Typography variant="h4">
               {overviewData.totalEngagement.toLocaleString()}

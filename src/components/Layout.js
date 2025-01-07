@@ -50,9 +50,9 @@ const Layout = () => {
       <MainContent>
         <LeftSidebar onTabChange={handleTabChange} currentTab={currentTab} />
         <ContentArea>
-        <TabPanel value={currentTab} index={0}>
+          <TabPanel value={currentTab} index={0}>
           <SocialMediaDashboard />
-        </TabPanel>
+          </TabPanel>
           <TabPanel value={currentTab} index={1}>
             <SentimentDashboard />
           </TabPanel>
@@ -72,7 +72,7 @@ const Layout = () => {
             <ChatbotDashboard />
           </TabPanel>
         </ContentArea>
-        <Sidebar />
+        <Sidebar currentTab={currentTab} />
       </MainContent>
     </Box>
   );
