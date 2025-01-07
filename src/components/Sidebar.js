@@ -144,6 +144,134 @@ const brandData = [
   },
 ];
 
+const aiSummaries = {
+  sales: {
+    title: "Sales Performance Insights",
+    summary: [
+      "Total sales are showing strong performance with consistent daily growth",
+      "Running Shoes category leads in sales volume with 35% market share",
+      "Return rates are well managed, averaging below 5% across categories",
+      "Customer base is well distributed across major Indonesian cities",
+      "Gender distribution shows balanced market penetration",
+    ],
+    recommendations: [
+      "Focus on expanding Running Shoes category success",
+      "Monitor return rates in Lifestyle Shoes category",
+      "Consider expansion opportunities in emerging cities",
+      "Maintain balanced marketing approach across gender segments",
+    ]
+  },
+  competitor: {
+    title: "Competitor Analysis Report",
+    summary: [
+      "Market Performance:",
+      "• Market share increased by 2.3% this quarter",
+      "• Maintaining leadership in athletic footwear",
+      "• Key strengths: product innovation and brand recognition",
+      "",
+      "Competitor Landscape:",
+      "• Main competitors Nike and Puma showing strong performance",
+      "• Casual wear segment emerging as key battleground",
+      "• Adidas leads in innovation metrics (8.5/10)",
+      "",
+      "Recommendation:",
+      "Focus on expanding lifestyle collection to compete in casual wear market.",
+    ],
+    recommendations: [
+      "Focus on expanding lifestyle collection to compete in casual wear market",
+      "Monitor competitor performance in athletic footwear",
+      "Maintain leadership in innovation metrics",
+      "Expand market share in emerging segments",
+    ]
+  },
+  sentiment: {
+    title: "Sentiment Analysis Overview",
+    summary: [
+      "Overall Metrics:",
+      "• Positive sentiment: 90.5%",
+      "• Neutral sentiment: 6.5%",
+      "• Negative sentiment: 3%",
+      "",
+      "Customer Satisfaction Drivers:",
+      "• Product quality: 45%",
+      "• Design: 30%",
+      "• Customer service: 25%",
+      "",
+      "Key Feedback:",
+      "Positive Keywords:",
+      "• \"comfortable\" (mentioned 2,450 times)",
+      "• \"durable\" (mentioned 1,890 times)",
+      "• \"stylish\" (mentioned 1,670 times)",
+      "",
+      "Areas for Improvement:",
+      "• \"expensive\" (mentioned 580 times)",
+      "• \"limited stock\" (mentioned 320 times)",
+    ],
+    recommendations: [
+      "Improve product quality to increase customer satisfaction",
+      "Enhance design to meet customer expectations",
+      "Provide excellent customer service to increase loyalty",
+      "Address concerns about pricing and stock availability",
+    ]
+  },
+  feedback: {
+    title: "Customer Feedback Analysis",
+    summary: [
+      "Overall Satisfaction:",
+      "• Customer satisfaction score: 4.5/5",
+      "• Net Promoter Score (NPS): 72",
+      "",
+      "Key Themes:",
+      "1. Product Experience:",
+      "   • Excellent comfort and fit (75% of reviews)",
+      "   • Premium pricing concerns (20% of feedback)",
+      "   • Size availability issues (15% of mentions)",
+      "",
+      "Service Metrics:",
+      "• Average response time: 4.2 hours",
+      "• Resolution rate: 92%",
+      "• First contact resolution: 78%",
+    ],
+    recommendations: [
+      "Improve product comfort and fit to increase customer satisfaction",
+      "Address premium pricing concerns to increase loyalty",
+      "Enhance size availability to meet customer expectations",
+      "Maintain excellent service metrics to increase customer loyalty",
+    ]
+  },
+  social: {
+    title: "Social Media Performance Report",
+    summary: [
+      "Platform Engagement:",
+      "Instagram:",
+      "• Followers: 2.1M (+5% MoM)",
+      "• Average engagement rate: 4.8%",
+      "• Top performing content: Product launches",
+      "",
+      "TikTok:",
+      "• Followers: 1.5M (+12% MoM)",
+      "• Average views: 250K per post",
+      "• Trending hashtag: #AdidasStyle",
+      "",
+      "Campaign Performance:",
+      "• Total reach: 5.2M",
+      "• Engagement rate: 6.3%",
+      "• Click-through rate: 2.8%",
+      "",
+      "Key Insights:",
+      "• Video content outperforms static posts by 3x",
+      "• Peak engagement times: 6-8 PM local",
+      "• User-generated content drives 45% more engagement",
+    ],
+    recommendations: [
+      "Increase Instagram followers by 10% in the next quarter",
+      "Improve TikTok engagement rate by 20% in the next quarter",
+      "Launch more product-related campaigns to increase reach and engagement",
+      "Utilize user-generated content to increase engagement and loyalty",
+    ]
+  },
+};
+
 const Sidebar = ({ currentTab }) => {
   const [selectedBrand, setSelectedBrand] = useState("Adidas");
   const [currentDashboard, setCurrentDashboard] = useState("social");
@@ -151,86 +279,15 @@ const Sidebar = ({ currentTab }) => {
   const getAISummary = (dashboard, brand) => {
     switch (dashboard) {
       case "competitor":
-        return `# Competitor Analysis Report
-        
-\nMarket Performance:
-• Market share increased by 2.3% this quarter
-• Maintaining leadership in athletic footwear
-• Key strengths: product innovation and brand recognition
-
-\nCompetitor Landscape:
-• Main competitors Nike and Puma showing strong performance
-• Casual wear segment emerging as key battleground
-• ${brand} leads in innovation metrics (8.5/10)
-
-\n📊 Recommendation:
-Focus on expanding lifestyle collection to compete in casual wear market.`;
-
+        return aiSummaries.competitor.summary.join("\n");
       case "sentiment":
-        return `# Sentiment Analysis Overview
-
-\n📈 Overall Metrics:
-• Positive sentiment: 90.5%
-• Neutral sentiment: 6.5%
-• Negative sentiment: 3%
-
-\n🎯 Customer Satisfaction Drivers:
-• Product quality: 45%
-• Design: 30%
-• Customer service: 25%
-
-\n💬 Key Feedback:
-Positive Keywords:
-• "comfortable" (mentioned 2,450 times)
-• "durable" (mentioned 1,890 times)
-• "stylish" (mentioned 1,670 times)
-
-Areas for Improvement:
-• "expensive" (mentioned 580 times)
-• "limited stock" (mentioned 320 times)`;
-
+        return aiSummaries.sentiment.summary.join("\n");
       case "feedback":
-        return `# Customer Feedback Analysis
-
-\n📊 Overall Satisfaction:
-• Customer satisfaction score: 4.5/5
-• Net Promoter Score (NPS): 72
-
-\n🔍 Key Themes:
-1. Product Experience:
-   • Excellent comfort and fit (75% of reviews)
-   • Premium pricing concerns (20% of feedback)
-   • Size availability issues (15% of mentions)
-
-\n⚡ Service Metrics:
-• Average response time: 4.2 hours
-• Resolution rate: 92%
-• First contact resolution: 78%`;
-
+        return aiSummaries.feedback.summary.join("\n");
       case "social":
-        return `# Social Media Performance Report
-
-\n📱 Platform Engagement:
-Instagram:
-• Followers: 2.1M (+5% MoM)
-• Average engagement rate: 4.8%
-• Top performing content: Product launches
-
-TikTok:
-• Followers: 1.5M (+12% MoM)
-• Average views: 250K per post
-• Trending hashtag: #${brand}Style
-
-\n📈 Campaign Performance:
-• Total reach: 5.2M
-• Engagement rate: 6.3%
-• Click-through rate: 2.8%
-
-\n🎯 Key Insights:
-• Video content outperforms static posts by 3x
-• Peak engagement times: 6-8 PM local
-• User-generated content drives 45% more engagement`;
-
+        return aiSummaries.social.summary.join("\n");
+      case "sales":
+        return aiSummaries.sales.summary.join("\n");
       default:
         return "# Select another dashboard to view AI-generated insights.";
     }
@@ -253,6 +310,9 @@ TikTok:
         break;
       case 5:
         setCurrentDashboard("chatbot");
+        break;
+      case 6:
+        setCurrentDashboard("sales");
         break;
       default:
         setCurrentDashboard("social");

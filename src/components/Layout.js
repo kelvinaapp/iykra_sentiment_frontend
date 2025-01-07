@@ -11,6 +11,7 @@ import CustomerFeedbackDashboard from './dashboards/CustomerFeedbackDashboard';
 import SocialMediaDashboard from './dashboards/SocialMediaDashboard';
 import CompetitorAnalysisDashboard from './dashboards/CompetitorAnalysisDashboard';
 import ChatbotDashboard from './dashboards/ChatbotDashboard';
+import SalesPerformanceDashboard from './dashboards/SalesPerformanceDashboard';
 
 const MainContent = styled(Box)({
   display: 'flex',
@@ -59,16 +60,16 @@ const Layout = () => {
           <TabPanel value={currentTab} index={2}>
             <CustomerFeedbackDashboard />
           </TabPanel>
-          {/* <TabPanel value={currentTab} index={3}>
-            <MarketTrendDashboard />
-          </TabPanel> */}
           <TabPanel value={currentTab} index={3}>
-            <CampaignDashboard />
+            <SalesPerformanceDashboard />
           </TabPanel>
           <TabPanel value={currentTab} index={4}>
-            <CompetitorAnalysisDashboard />
+            <CampaignDashboard />
           </TabPanel>
           <TabPanel value={currentTab} index={5}>
+            <CompetitorAnalysisDashboard />
+          </TabPanel>
+          <TabPanel value={currentTab} index={6}>
             <ChatbotDashboard />
           </TabPanel>
         </ContentArea>

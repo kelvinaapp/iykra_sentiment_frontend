@@ -7,6 +7,7 @@ import FeedbackIcon from '@mui/icons-material/Feedback';
 import PublicIcon from '@mui/icons-material/Public';
 import CompareIcon from '@mui/icons-material/Compare';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 const LeftSidebarContainer = styled(Box)(({ theme }) => ({
   width: '250px',
@@ -83,11 +84,11 @@ function LeftSidebar({ onTabChange, currentTab }) {
           label="Product Review Sentiment" 
           iconPosition="start"
         />
-        {/* <StyledTab 
-          icon={<TrendingUpIcon />} 
-          label="Market Trends" 
+        <StyledTab 
+          icon={<MonetizationOnIcon />} 
+          label="Sales Performance" 
           iconPosition="start"
-        /> */}
+        />
         <StyledTab 
           icon={<CampaignIcon />} 
           label="Campaign Performance" 
