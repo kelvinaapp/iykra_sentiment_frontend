@@ -75,6 +75,7 @@ const Layout = () => {
         </ContentArea>
         <Sidebar currentTab={currentTab} />
       </MainContent>
+      
     </Box>
   );
 };
