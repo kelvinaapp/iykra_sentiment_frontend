@@ -23,6 +23,7 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import { useBrand } from '../../context/BrandContext';
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: '#fff',
@@ -97,6 +98,7 @@ const ageData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const SalesPerformanceDashboard = () => {
+  const { selectedBrand } = useBrand();
   // Calculate KPIs
   const totalSales = dailySalesData.reduce((sum, item) => sum + item.orderValue, 0);
   const avgOrderValue = totalSales / productCategoryData.reduce((sum, item) => sum + item.volume, 0);
@@ -106,7 +108,7 @@ const SalesPerformanceDashboard = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <DashboardTitle variant="h5">
-        Sales Performance Dashboard – Adidas
+        Sales Performance Dashboard - {selectedBrand}
       </DashboardTitle>
       
       <Grid container spacing={3}>

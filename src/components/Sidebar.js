@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useBrand } from "../context/BrandContext";
 import {
   Box,
   Typography,
@@ -273,7 +274,7 @@ const aiSummaries = {
 };
 
 const Sidebar = ({ currentTab }) => {
-  const [selectedBrand, setSelectedBrand] = useState("Adidas");
+  const { selectedBrand, setSelectedBrand } = useBrand();
   const [currentDashboard, setCurrentDashboard] = useState("social");
 
   const getAISummary = (dashboard, brand) => {
@@ -288,8 +289,10 @@ const Sidebar = ({ currentTab }) => {
         return aiSummaries.social.summary.join("\n");
       case "sales":
         return aiSummaries.sales.summary.join("\n");
+      case "campaign":
+        return "This Dashboard is under development";
       default:
-        return "# Select another dashboard to view AI-generated insights.";
+        return "";
     }
   };
 
@@ -305,17 +308,20 @@ const Sidebar = ({ currentTab }) => {
       case 2:
         setCurrentDashboard("feedback");
         break;
-      case 4:
-        setCurrentDashboard("competitor");
-        break;
-      case 5:
-        setCurrentDashboard("chatbot");
-        break;
-      case 6:
+      case 3:
         setCurrentDashboard("sales");
         break;
+      case 4:
+        setCurrentDashboard("campaign");
+        break;
+      case 5:
+        setCurrentDashboard("competitor");
+        break;
+      case 6:
+        setCurrentDashboard("chatbot");
+        break;
       default:
-        setCurrentDashboard("social");
+        setCurrentDashboard("none");
     }
   }, [currentTab]);
 
@@ -375,6 +381,7 @@ const Sidebar = ({ currentTab }) => {
       <Divider />
 
       {/* AI Summary Section */}
+      {/*
       <SummarySection>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
           AI Summary
@@ -383,6 +390,7 @@ const Sidebar = ({ currentTab }) => {
           {getAISummary(currentDashboard, selectedBrand)}
         </SummaryText>
       </SummarySection>
+          */}
     </SidebarContainer>
   );
 };

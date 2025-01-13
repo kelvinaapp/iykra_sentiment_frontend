@@ -3,6 +3,8 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Layout from './components/Layout';
+import { BrandProvider } from './context/BrandContext';
+import { DateProvider } from './context/DateContext';
 
 // Configure future flags for React Router v7
 const router = {
@@ -33,9 +35,13 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router {...router}>
-        <Layout />
-      </Router>
+      <BrandProvider>
+        <DateProvider>
+          <Router {...router}>
+            <Layout />
+          </Router>
+        </DateProvider>
+      </BrandProvider>
     </ThemeProvider>
   );
 }

@@ -1,11 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, TextField, IconButton, Paper, Typography, Avatar, styled, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import ImageIcon from '@mui/icons-material/Image';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { deepPurple } from '@mui/material/colors';
-import ReactMarkdown from 'react-markdown';
+import React, { useState, useRef, useEffect } from "react";
+import { 
+  Box, 
+  TextField, 
+  IconButton, 
+  Paper, 
+  Typography, 
+  Avatar, 
+  styled, 
+  Button, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions 
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { deepPurple } from "@mui/material/colors";
+import ReactMarkdown from "react-markdown";
 
 const ChatContainer = styled(Box)(({ theme }) => ({
   height: 'calc(100vh - 64px)',
@@ -313,9 +325,6 @@ const ChatbotDashboard = () => {
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <IconButton size="small" color="inherit">
                   <AttachFileIcon />
-                </IconButton>
-                <IconButton size="small" color="inherit">
-                  <ImageIcon />
                 </IconButton>
                 <IconButton size="small" color="inherit" onClick={handleSend}>
                   <SendIcon />
