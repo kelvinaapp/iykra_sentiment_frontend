@@ -1,221 +1,243 @@
-import React from "react";
-import { Box, Typography, Card, CardContent, Grid, Paper } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
+import React, { useState, useEffect, useCallback } from "react";
+import { 
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  Grid, 
+  Paper, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  Link 
+} from "@mui/material";
+import { 
+  styled 
+} from "@mui/material/styles";
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  ArcElement, 
 } from "chart.js";
-import { Line, Bar, Pie } from "react-chartjs-2";
+import { 
+  Line, 
+  Bar, 
+  Pie 
+} from "react-chartjs-2";
 import ReactWordcloud from "react-wordcloud";
 import CommentIcon from "@mui/icons-material/Comment";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+// import AIDashboardSummary from "../AIDashboardSummary";
+import { useBrand } from '../../context/BrandContext';
+import { useDate } from "../../context/DateContext";
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
   ArcElement
 );
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: "#fff",
-  backgroundColor: "#00897b",
-  padding: theme.spacing(2),
+  color: "#fff", 
+  backgroundColor: "#00897b", 
+  padding: theme.spacing(2), 
   marginBottom: theme.spacing(3),
 }));
 
 const ChartCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(3), 
   height: "100%",
 }));
 
 const MetricCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  textAlign: "center",
-  height: "100%",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  backgroundColor: theme.palette.primary.light,
+  padding: theme.spacing(2), 
+  textAlign: "center", 
+  height: "100%", 
+  display: "flex", 
+  flexDirection: "column", 
+  justifyContent: "center", 
+  backgroundColor: theme.palette.primary.light, 
   color: theme.palette.primary.contrastText,
 }));
 
 const SentimentDashboard = () => {
-  // Sample data for platform sentiment distribution
-  const platformSentimentData = {
-    labels: ["Positif", "Negatif"],
-    datasets: [
-      {
-        label: "Instagram",
-        data: [45, 25],
-        backgroundColor: "#E4405F",
-      },
-      {
-        label: "TikTok",
-        data: [25, 10],
-        backgroundColor: "#000000",
-      },
-    ],
-  };
+  const { selectedBrand } = useBrand();
+  const { getDateRange } = useDate();
 
-  // Overview metrics
-  const overviewData = {
-    totalComments: 15789,
-    totalPosts: 342,
-    totalEngagement: 45678,
+  // Data states
+  const [overviewData, setOverviewData] = useState({
+    totalComments: 0, 
+    totalPosts: 0, 
+    totalEngagement: 0, 
     sentimentDistribution: {
-      positive: 65,
-      negative: 20,
+      positive: 0, 
+      negative: 0,
     },
+  });
+
+  const [platformSentimentData, setPlatformSentimentData] = useState({
+    labels: ["Positif", "Negatif"], 
+    datasets: [],
+  });
+
+  const [timeSeriesData, setTimeSeriesData] = useState({
+    labels: [], 
+    datasets: [],
+  });
+
+  const [keywordsData, setKeywordsData] = useState({
+    positive: [], 
+    negative: []
+  });
+
+  const [trendingHashtags, setTrendingHashtags] = useState([]);
+  const [topComments, setTopComments] = useState([]);
+
+  // Initialize contentSentimentData as an empty array
+  const [contentSentiment, setContentSentiment] = useState({});
+  
+
+  const formatNumber = (num) => {
+    if (num === null || num === undefined) return 'N/A';
+    
+    const absNum = Math.abs(Number(num));
+    if (absNum >= 1.0e9) {
+      return (absNum / 1.0e9).toFixed(2) + 'B';
+    } else if (absNum >= 1.0e6) {
+      return (absNum / 1.0e6).toFixed(2) + 'M';
+    } else if (absNum >= 1.0e3) {
+      return (absNum / 1.0e3).toFixed(2) + 'K';
+    }
+    return absNum.toString();
   };
 
-  // Sample data for time series sentiment
-  const timeSeriesData = {
-    labels: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"],
-    datasets: [
-      {
-        label: "Positive",
-        data: [65, 70, 75, 72, 78, 80, 76],
-        borderColor: "#00897b",
-        backgroundColor: "rgba(0, 137, 123, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-      {
-        label: "Negative",
-        data: [35, 30, 25, 28, 22, 20, 24],
-        borderColor: "#f44336",
-        backgroundColor: "rgba(244, 67, 54, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
+  const fetchDataFromEndpoint = useCallback(async (endpoint) => {
+    try {
+      const { startDate, endDate } = getDateRange();
+      const response = await fetch(`http://localhost:8000/api/social-media-sentiment/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`Error fetching ${endpoint}:`, error);
+      throw error;
+    }
+  }, [selectedBrand, getDateRange]);
+
+  const transformContentSentimentData = (data) => {
+    const labels = Object.keys(data);
+    const positiveData = [];
+    const negativeData = [];
+
+    labels.forEach(contentType => {
+      positiveData.push(data[contentType].positive);
+      negativeData.push(data[contentType].negative);
+    });
+
+    return {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Positive',
+          data: positiveData,
+          backgroundColor: '#4caf50',
+        },
+        {
+          label: 'Negative',
+          data: negativeData,
+          backgroundColor: '#f44336',
+        },
+      ],
+    };
   };
 
-  // Sample data for content type sentiment
-  const contentTypeSentiment = {
-    labels: ["Instagram Video", "Instagram Image", "TikTok Video"],
-    datasets: [
-      {
-        label: "Positive",
-        data: [75, 65, 80],
-        backgroundColor: "#00897b",
-        stack: "stack0",
-      },
-      {
-        label: "Negative",
-        data: [25, 35, 20],
-        backgroundColor: "#f44336",
-        stack: "stack0",
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        const [overview, platformData, timeSeriesResult, keywordsResult, hashtagsData, commentsData, contentSentimentData] = await Promise.all([
+          fetchDataFromEndpoint('overview'),
+          fetchDataFromEndpoint('platform-sentiment'),
+          fetchDataFromEndpoint('time-series'),
+          fetchDataFromEndpoint('keywords'),
+          fetchDataFromEndpoint('trending-hashtags'),
+          fetchDataFromEndpoint('top-comments'),
+          fetchDataFromEndpoint('content-sentiment')
+        ]);
 
-  // Sample data for wordclouds
-  const positiveWords = [
-    { text: "bagus", value: 85 },
-    { text: "keren", value: 78 },
-    { text: "mantap", value: 72 },
-    { text: "recommended", value: 68 },
-    { text: "berkualitas", value: 65 },
-    { text: "nyaman", value: 62 },
-    { text: "memuaskan", value: 58 },
-    { text: "ramah", value: 55 },
-    { text: "cepat", value: 52 },
-    { text: "terpercaya", value: 48 },
-  ];
+        setOverviewData(overview);
+        setPlatformSentimentData({
+          labels: ["Positif", "Negatif"], 
+          datasets: Object.entries(platformData).map(([platform, data]) => ({
+            label: platform, 
+            data: [data.positive, data.negative], 
+            backgroundColor: platform === "Instagram" ? "#E4405F" : "#000000",
+          })),
+        });
 
-  const negativeWords = [
-    { text: "mahal", value: 75 },
-    { text: "lama", value: 68 },
-    { text: "kecewa", value: 65 },
-    { text: "buruk", value: 62 },
-    { text: "rusak", value: 58 },
-    { text: "jelek", value: 55 },
-    { text: "lambat", value: 52 },
-    { text: "tidak sesuai", value: 48 },
-    { text: "tidak puas", value: 45 },
-    { text: "tidak ramah", value: 42 },
-  ];
+        setTimeSeriesData({
+          labels: timeSeriesResult.labels, 
+          datasets: [
+            {
+              label: "Positive", 
+              data: timeSeriesResult.positive, 
+              borderColor: "#00897b", 
+              backgroundColor: "rgba(0, 137, 123, 0.1)", 
+              tension: 0.4, 
+              fill: true,
+            },
+            {
+              label: "Negative", 
+              data: timeSeriesResult.negative, 
+              borderColor: "#f44336", 
+              backgroundColor: "rgba(244, 67, 54, 0.1)", 
+              tension: 0.4, 
+              fill: true,
+            },
+          ],
+        });
 
-  // Sample data for trending hashtags
-  const trendingHashtags = [
-    { tag: "#SustainableFashion", growth: "+245%" },
-    { tag: "#LocalBrand", growth: "+182%" },
-    { tag: "#OOTD", growth: "+156%" },
-    { tag: "#StyleInspo", growth: "+134%" },
-    { tag: "#FashionTrends", growth: "+112%" },
-  ];
+        setKeywordsData(keywordsResult);
+        setTrendingHashtags(hashtagsData);
+        setTopComments(commentsData);
+        
+        setContentSentiment(transformContentSentimentData(contentSentimentData));
 
-  // Sample data for top comments
-  const topComments = [
-    {
-      text: "Brand lokal tapi kualitasnya udah internasional banget! 🔥 Desainnya keren, cocok buat anak muda. Keep up the good work! 👏",
-      likes: 2450,
-      replies: 342,
-      sentiment: "positive",
-      platform: "Instagram",
-      timestamp: "2024-01-05 14:30",
-    },
-    {
-      text: "Ini sih brand fashion paling aesthetic tahun ini! ✨ Tiap rilis koleksi baru selalu ditunggu. Sukses terus! 💫",
-      likes: 1850,
-      replies: 256,
-      sentiment: "positive",
-      platform: "TikTok",
-      timestamp: "2024-01-04 15:45",
-    },
-    {
-      text: "Yang bikin brand ini beda itu konsistensi kualitas sama inovasinya. Ga pernah mengecewakan! 💯",
-      likes: 1620,
-      replies: 189,
-      sentiment: "positive",
-      platform: "Instagram",
-      timestamp: "2024-01-03 09:20",
-    },
-    {
-      text: "Koleksi terbarunya keren banget! 🌟 Apalagi campaign videonya aesthetic parah. Goals banget sih! 😍",
-      likes: 1480,
-      replies: 167,
-      sentiment: "positive",
-      platform: "TikTok",
-      timestamp: "2024-01-02 16:15",
-    },
-    {
-      text: "Desainnya selalu fresh dan unik, ga pasaran. Brand lokal yang patut dibanggakan! 🙌",
-      likes: 1350,
-      replies: 145,
-      sentiment: "positive",
-      platform: "Instagram",
-      timestamp: "2024-01-01 11:30",
-    },
-  ];
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      }
+    };
+
+    fetchAllData();
+  }, [selectedBrand, getDateRange, fetchDataFromEndpoint]);
 
   const wordcloudOptions = {
-    rotations: 0,
-    rotationAngles: [0],
-    fontSizes: [15, 35],
+    rotations: 0, 
+    rotationAngles: [0], 
+    fontSizes: [25, 45], 
     padding: 2,
   };
 
   return (
     <Box sx={{ p: 3 }}>
       <DashboardTitle variant="h5">
-        Social Media Sentiment Analysis
+        Sentiment Analysis Dashboard - {selectedBrand}
       </DashboardTitle>
 
       {/* Overview Stats */}
@@ -224,9 +246,9 @@ const SentimentDashboard = () => {
           <MetricCard>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
                 mb: 1,
               }}
             >
@@ -234,7 +256,7 @@ const SentimentDashboard = () => {
               <Typography variant="h6">Total Posts</Typography>
             </Box>
             <Typography variant="h4">
-              {overviewData.totalPosts.toLocaleString()}
+              {formatNumber(overviewData.totalPosts)}
             </Typography>
           </MetricCard>
         </Grid>
@@ -242,17 +264,17 @@ const SentimentDashboard = () => {
           <MetricCard>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
                 mb: 1,
               }}
             >
               <CommentIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Total Komentar</Typography>
+              <Typography variant="h6">Total Comments</Typography>
             </Box>
             <Typography variant="h4">
-              {overviewData.totalComments.toLocaleString()}
+              {formatNumber(overviewData.totalComments)}
             </Typography>
           </MetricCard>
         </Grid>
@@ -260,71 +282,41 @@ const SentimentDashboard = () => {
           <MetricCard>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
                 mb: 1,
               }}
             >
               <ThumbUpIcon sx={{ mr: 1 }} />
-              <Typography variant="h6">Total Likes</Typography>
+              <Typography variant="h6">Total Engagement</Typography>
             </Box>
             <Typography variant="h4">
-              {overviewData.totalEngagement.toLocaleString()}
+              {formatNumber(overviewData.totalEngagement)}
             </Typography>
           </MetricCard>
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
-        {/* Sentiment Distribution */}
-        <Grid item xs={12} md={3}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Distribusi Sentimen
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Pie
-                  data={{
-                    labels: ["Positif", "Negatif"],
-                    datasets: [
-                      {
-                        data: [
-                          overviewData.sentimentDistribution.positive,
-                          overviewData.sentimentDistribution.negative,
-                        ],
-                        backgroundColor: ["#00897b", "#f44336"],
-                      },
-                    ],
-                  }}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
 
         {/* Time Series Sentiment */}
-        <Grid item xs={12} md={9}>
+        <Grid item xs={12} md={12}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Trend Sentimen
+                Sentiment Trends
               </Typography>
               <Box sx={{ height: 300 }}>
                 <Line
                   data={timeSeriesData}
                   options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false, 
                     scales: {
                       y: {
-                        beginAtZero: true,
-                        max: 100,
+                        beginAtZero: true, 
+                        max: 100, 
                         ticks: {
                           callback: (value) => value + "%",
                         },
@@ -349,19 +341,50 @@ const SentimentDashboard = () => {
           </ChartCard>
         </Grid>
 
+                {/* Sentiment Distribution */}
+                <Grid item xs={12} md={4}>
+                <ChartCard>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Sentiment Distribution
+                    </Typography>
+                    <Box sx={{ height: 300 }}>
+                      <Pie
+                        data={{
+                          labels: ["Positif", "Negatif"], 
+                          datasets: [
+                            {
+                              data: [
+                                overviewData.sentimentDistribution.positive/100, 
+                                overviewData.sentimentDistribution.negative/100,
+                              ], 
+                              backgroundColor: ["#00897b", "#f44336"],
+                            },
+                          ],
+                        }}
+                        options={{
+                          responsive: true, 
+                          maintainAspectRatio: false,
+                        }}
+                      />
+                    </Box>
+                  </CardContent>
+                </ChartCard>
+              </Grid>
+
         {/* Platform Sentiment */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Sentimen per Platform
+                Sentiment by Platform
               </Typography>
               <Box sx={{ height: 300 }}>
                 <Bar
                   data={platformSentimentData}
                   options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false, 
                     scales: {
                       y: {
                         beginAtZero: true,
@@ -374,124 +397,55 @@ const SentimentDashboard = () => {
           </ChartCard>
         </Grid>
 
-        {/* Content Type Sentiment */}
-        <Grid item xs={12} md={6}>
+        {/* Content Sentiment Analysis */}
+        <Grid item xs={4}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Sentimen berdasarkan Jenis Konten
+                Sentiment by Content Type
               </Typography>
               <Box sx={{ height: 300 }}>
-                <Bar
-                  data={contentTypeSentiment}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      x: {
-                        grid: {
-                          display: false,
+                {contentSentiment && contentSentiment.datasets ? (
+                  <Bar
+                    data={contentSentiment}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        x: {
+                          stacked: true,
+                          grid: {
+                            display: false,
+                          },
                         },
-                      },
-                      y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                          callback: (value) => value + "%",
-                        },
-                      },
-                    },
-                    plugins: {
-                      legend: {
-                        position: "top",
-                      },
-                      tooltip: {
-                        callbacks: {
-                          label: (context) => {
-                            return `${context.dataset.label}: ${context.raw}%`;
+                        y: {
+                          stacked: true,
+                          beginAtZero: true,
+                          max: 100,
+                          ticks: {
+                            callback: (value) => value + "%",
                           },
                         },
                       },
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        {/* Wordclouds and Trending Hashtags */}
-        <Grid item xs={12} md={4}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom color="primary">
-                Top 10 Positive Keywords
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <ReactWordcloud
-                  words={positiveWords}
-                  options={wordcloudOptions}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom color="error">
-                Top 10 Negative Keywords
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <ReactWordcloud
-                  words={negativeWords}
-                  options={wordcloudOptions}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Trending Hashtags
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {trendingHashtags.map((hashtag, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      py: 1.5,
-                      borderBottom: "1px solid #eee",
+                      plugins: {
+                        legend: {
+                          position: "top",
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: (context) => {
+                              return `${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                            },
+                          },
+                        },
+                      },
                     }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: "primary.main",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {hashtag.tag}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "success.main",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {hashtag.growth}
-                    </Typography>
+                  />
+                ) : (
+                  <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                    <Typography color="text.secondary">No data available</Typography>
                   </Box>
-                ))}
+                )}
               </Box>
             </CardContent>
           </ChartCard>
@@ -502,7 +456,7 @@ const SentimentDashboard = () => {
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom color="primary">
-                Top 5 Komentar dengan Sentiment Tertinggi
+                Top 5 Comments with Highest Sentiment
               </Typography>
               {topComments.map((comment, index) => (
                 <Box
@@ -520,25 +474,18 @@ const SentimentDashboard = () => {
                 >
                   <Box sx={{ flex: 1 }}>
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       sx={{
-                        color:
-                          comment.sentiment === "positive"
-                            ? "primary.main"
-                            : "error.main",
+                        color: comment.sentiment_score > 0.5
+                          ? "primary.main"
+                          : "error.main",
                         mb: 0.5,
                       }}
                     >
-                      {comment.text}
+                      {comment.comment}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {comment.platform} •{" "}
-                      {new Date(comment.timestamp).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      Sentiment Score: {(comment.sentiment_score * 100).toFixed(1)}%
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: "right" }}>
@@ -547,14 +494,14 @@ const SentimentDashboard = () => {
                       color="primary"
                       sx={{ whiteSpace: "nowrap" }}
                     >
-                      {comment.likes.toLocaleString()} likes
+                      {formatNumber(comment.total_likes)} likes
                     </Typography>
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       sx={{ whiteSpace: "nowrap" }}
                     >
-                      {comment.replies.toLocaleString()} replies
+                      {formatNumber(comment.total_replies)} replies
                     </Typography>
                   </Box>
                 </Box>
@@ -562,9 +509,110 @@ const SentimentDashboard = () => {
             </CardContent>
           </ChartCard>
         </Grid>
+
+        {/* Wordclouds and Trending Hashtags */}
+        <Grid item xs={12} md={4}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="primary">
+                Top 10 Positive Keywords
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ReactWordcloud
+                  words={keywordsData.positive}
+                  options={wordcloudOptions}
+                />
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom color="error">
+                Top 10 Negative Keywords
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ReactWordcloud
+                  words={keywordsData.negative}
+                  options={wordcloudOptions}
+                />
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Trending Hashtags
+              </Typography>
+              <List>
+                {trendingHashtags.map((hashtag, index) => (
+                  <ListItem
+                    key={index}
+                    sx={{
+                      py: 1, 
+                      px: 0, 
+                      borderBottom: index < trendingHashtags.length - 1 ? '1px solid rgba(0, 0, 0, 0.12)' : 'none',
+                    }}
+                  >
+                    <ListItemText 
+                      primary={
+                        <Link
+                          href="#"
+                          color="primary"
+                          sx={{ textDecoration: 'none' }}
+                        >
+                          {hashtag.tag}
+                        </Link>
+                      }
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2" color="text.primary">
+                        {hashtag.count}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="success.main"
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
+                        {hashtag.growth}
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
       </Grid>
+      
     </Box>
   );
 };
 
 export default SentimentDashboard;
+
+// {/* AI Dashboard Summary */}
+// {!loading && !error && (
+//   <AIDashboardSummary
+//     data={{
+//       metrics: {
+//         totalPosts: overviewData.totalPosts, 
+//         positiveCount: overviewData.sentimentDistribution.positive, 
+//         negativeCount: overviewData.sentimentDistribution.negative, 
+//         neutralCount: 0,
+//       },
+//       sentimentDistribution: overviewData.sentimentDistribution, 
+//       sentimentTrend: timeSeriesData, 
+//       topPosts: topComments, 
+//       wordCloudData: keywordsData, 
+//       selectedBrand: selectedBrand,
+//     }}
+//     brand={selectedBrand}
+//   />
+// )}

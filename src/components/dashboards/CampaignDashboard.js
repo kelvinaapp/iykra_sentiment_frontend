@@ -1,4 +1,4 @@
-import React from 'react';
+// import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Grid, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut, Pie } from 'react-chartjs-2';
 import GaugeChart from 'react-gauge-chart';
+import { useBrand } from '../../context/BrandContext';
 
 ChartJS.register(
   CategoryScale,
@@ -60,6 +61,8 @@ const MetricCard = styled(Paper)(({ theme }) => ({
 }));
 
 const CampaignDashboard = () => {
+  const { selectedBrand } = useBrand();
+
   // Campaign Overview Data
   const campaignInfo = {
     name: 'Summer Collection 2024',
@@ -132,9 +135,9 @@ const CampaignDashboard = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <DashboardTitle variant="h4">
-        Campaign Performance Dashboard
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <DashboardTitle variant="h5">
+        Campaign Performance Dashboard - {selectedBrand}
       </DashboardTitle>
 
       {/* Campaign Overview */}
