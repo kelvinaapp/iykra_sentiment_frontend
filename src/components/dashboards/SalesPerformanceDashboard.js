@@ -50,7 +50,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const SalesPerformanceDashboard = () => {
   const { selectedBrand } = useBrand();
-  const { dateFilter, setDateFilter, getDateRange } = useDate();
+  const { getDateRange } = useDate();
 
   // Helper function to format currency in IDR
   const formatCurrency = (amount) => {
@@ -70,11 +70,11 @@ const SalesPerformanceDashboard = () => {
   const [genderData, setGenderData] = useState([]);
   const [ageData, setAgeData] = useState([]);
 
-  const handleDateFilterChange = (event, newFilter) => {
-    if (newFilter !== null) {
-      setDateFilter(newFilter);
-    }
-  };
+  // const handleDateFilterChange = (event, newFilter) => {
+  //   if (newFilter !== null) {
+  //     setDateFilter(newFilter);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -118,7 +118,7 @@ const SalesPerformanceDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [selectedBrand, dateFilter]);
+  }, [selectedBrand, getDateRange]);
 
   // Calculate KPIs
   const totalSales = dailySalesData.reduce((sum, item) => sum + item.orderValue, 0);
