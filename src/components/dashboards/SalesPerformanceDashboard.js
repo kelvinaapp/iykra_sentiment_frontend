@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import {
   Card,
@@ -24,6 +24,9 @@ import {
   Cell,
 } from 'recharts';
 import { useBrand } from '../../context/BrandContext';
+import { useDate } from '../../context/DateContext';
+
+const API_BASE_URL = 'http://localhost:8000/api/sales'
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: '#fff',
@@ -43,102 +46,116 @@ const MetricCard = styled(Paper)(({ theme }) => ({
   color: theme.palette.primary.contrastText,
 }));
 
-// Sample data - replace with actual data from your API
-const dailySalesData = [
-  { day: 'Mon', orderValue: 400000 },
-  { day: 'Tue', orderValue: 350000 },
-  { day: 'Wed', orderValue: 500000 },
-  { day: 'Thu', orderValue: 450000 },
-  { day: 'Fri', orderValue: 600000 },
-  { day: 'Sat', orderValue: 750000 },
-  { day: 'Sun', orderValue: 550000 },
-];
-
-const productCategoryData = [
-  { category: 'Running Shoes', volume: 1200 },
-  { category: 'Lifestyle Shoes', volume: 900 },
-  { category: 'Training Shoes', volume: 600 },
-  { category: 'Soccer Shoes', volume: 400 },
-  { category: 'Basketball Shoes', volume: 350 },
-];
-
-const returnRateData = [
-  { category: 'Running Shoes', value: 35 },
-  { category: 'Lifestyle Shoes', value: 25 },
-  { category: 'Training Shoes', value: 20 },
-  { category: 'Soccer Shoes', value: 12 },
-  { category: 'Basketball Shoes', value: 8 },
-];
-
-const locationData = [
-  { city: 'Jakarta', customers: 1200 },
-  { city: 'Surabaya', customers: 800 },
-  { city: 'Bandung', customers: 600 },
-  { city: 'Medan', customers: 450 },
-  { city: 'Semarang', customers: 350 },
-  { city: 'Yogyakarta', customers: 300 },
-  { city: 'Malang', customers: 280 },
-  { city: 'Makassar', customers: 250 },
-  { city: 'Palembang', customers: 220 },
-  { city: 'Denpasar', customers: 200 },
-];
-
-const genderData = [
-  { name: 'Male', value: 55 },
-  { name: 'Female', value: 45 },
-];
-
-const ageData = [
-  { group: '18-24', value: 30 },
-  { group: '25-34', value: 35 },
-  { group: '35-44', value: 20 },
-  { group: '45+', value: 15 },
-];
-
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const SalesPerformanceDashboard = () => {
   const { selectedBrand } = useBrand();
+  const { dateFilter, setDateFilter, getDateRange } = useDate();
+
+  // Helper function to format currency in IDR
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+  
+  // State declarations
+  const [dailySalesData, setDailySalesData] = useState([]);
+  const [productCategoryData, setProductCategoryData] = useState([]);
+  const [returnRateData, setReturnRateData] = useState([]);
+  const [locationData, setLocationData] = useState([]);
+  const [genderData, setGenderData] = useState([]);
+  const [ageData, setAgeData] = useState([]);
+
+  const handleDateFilterChange = (event, newFilter) => {
+    if (newFilter !== null) {
+      setDateFilter(newFilter);
+    }
+  };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (selectedBrand) params.append('brand', selectedBrand);
+        
+        // Add date range parameters
+        const { startDate, endDate } = getDateRange();
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+        
+        // Fetch daily sales data
+        const salesResponse = await fetch(`${API_BASE_URL}/daily-sales?${params}`);
+        const salesData = await salesResponse.json();
+        setDailySalesData(salesData);
+
+        // Fetch product category data
+        const categoryResponse = await fetch(`${API_BASE_URL}/product-categories?${params}`);
+        const categoryData = await categoryResponse.json();
+        setProductCategoryData(categoryData);
+
+        // Fetch return rate data
+        const returnResponse = await fetch(`${API_BASE_URL}/return-rates?${params}`);
+        const returnData = await returnResponse.json();
+        setReturnRateData(returnData);
+
+        // Fetch location data
+        const locationResponse = await fetch(`${API_BASE_URL}/customer-locations?${params}`);
+        const locationData = await locationResponse.json();
+        setLocationData(locationData);
+
+        // Fetch demographics data
+        const demographicsResponse = await fetch(`${API_BASE_URL}/demographics?${params}`);
+        const demographicsData = await demographicsResponse.json();
+        setGenderData(demographicsData.gender);
+        setAgeData(demographicsData.age);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, [selectedBrand, dateFilter]);
+
   // Calculate KPIs
   const totalSales = dailySalesData.reduce((sum, item) => sum + item.orderValue, 0);
-  const avgOrderValue = totalSales / productCategoryData.reduce((sum, item) => sum + item.volume, 0);
-  const overallReturnRate = returnRateData.reduce((sum, item) => sum + item.value, 0) / returnRateData.length;
-  const repeatPurchaseScore = 78; // Example score, replace with actual calculation
+  const avgOrderValue = totalSales / productCategoryData.reduce((sum, item) => sum + item.volume, 0) || 0;
+  const overallReturnRate = returnRateData.reduce((sum, item) => sum + item.value, 0) / returnRateData.length || 0;
+  const repeatPurchaseScore = 75; // This should come from the API
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <DashboardTitle variant="h5">
-        Sales Performance Dashboard - {selectedBrand}
+      <DashboardTitle variant="h4" gutterBottom>
+        Sales Performance Dashboard
       </DashboardTitle>
-      
+
       <Grid container spacing={3}>
         {/* KPI Cards */}
         <Grid item xs={12} md={3}>
-          <MetricCard>
+          <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
             <Typography variant="h6">Total Sales</Typography>
-            <Typography variant="h4">${(totalSales / 1000000).toFixed(2)}M</Typography>
-            <Typography variant="body2">Overall sales performance</Typography>
+            <Typography variant="h5" sx={{ mt: '16px' }}>{formatCurrency(totalSales)}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
-          <MetricCard>
+          <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
             <Typography variant="h6">Average Order Value</Typography>
-            <Typography variant="h4">${avgOrderValue.toFixed(2)}</Typography>
-            <Typography variant="body2">Average value per transaction</Typography>
+            <Typography variant="h5" sx={{ mt: '16px' }}>{formatCurrency(avgOrderValue)}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
-          <MetricCard>
+          <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
             <Typography variant="h6">Return Rate</Typography>
-            <Typography variant="h4">{overallReturnRate.toFixed(1)}%</Typography>
-            <Typography variant="body2">Overall product return rate</Typography>
+            <Typography variant="h5" sx={{ mt: '16px' }}>{overallReturnRate.toFixed(1)}%</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
-          <MetricCard>
-            <Typography variant="h6">Repeat Purchase Score</Typography>
-            <Typography variant="h4">{repeatPurchaseScore}%</Typography>
-            <Typography variant="body2">Customer loyalty indicator</Typography>
+          <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
+            <Typography variant="body1"><b>Repeat Purchase Score</b></Typography>
+            <Typography variant="h5" sx={{ mt: '16px' }}>{repeatPurchaseScore}%</Typography>
           </MetricCard>
         </Grid>
 

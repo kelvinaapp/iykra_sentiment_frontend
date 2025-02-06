@@ -1,18 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useBrand } from '../../context/BrandContext';
+import { useDate } from "../../context/DateContext";
 import { Box, Typography, Card, CardContent, Grid, Paper, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
-import { Bar, Pie } from "react-chartjs-2";
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  ArcElement,
+  PointElement,
+  ScatterController,
+  LineElement,
+  LineController
+} from "chart.js";
+import { Bar, Pie, Scatter, Line } from "react-chartjs-2";
 import "chart.js/auto";
 import CommentIcon from "@mui/icons-material/Comment";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import RateReviewIcon from "@mui/icons-material/RateReview";
-import ReactWordcloud from "react-wordcloud";
-import AIDashboardSummary from "../AIDashboardSummary";
+import Rating from '@mui/material/Rating';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+// import AIDashboardSummary from "../AIDashboardSummary";
+
+const API_BASE_URL = 'http://localhost:8000/api/product-reviews';
+
+ChartJS.register(
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  ArcElement,
+  PointElement,
+  ScatterController,
+  LineElement,
+  LineController
+);
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: "#fff",
@@ -39,15 +68,14 @@ const ChartCard = styled(Card)(({ theme }) => ({
 
 const CustomerFeedbackDashboard = () => {
   const { selectedBrand } = useBrand();
+  const { getDateRange } = useDate();
   // Filter states
   const [filterCategory, setFilterCategory] = useState("Jenis Bahan");
   const [selectedProduct, setSelectedProduct] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Data states
   const [stats, setStats] = useState({
-    totalProducts: 0,
+    averageRating: 0,
     totalReviews: 0,
     positiveCount: 0,
     negativeCount: 0,
@@ -67,11 +95,18 @@ const CustomerFeedbackDashboard = () => {
     datasets: [],
   });
   const [productSentimentData, setProductSentimentData] = useState({});
-  const [wordCloudData, setWordCloudData] = useState({
-    positive: [],
-    negative: [],
-  });
   const [categoryDataFilter, setCategoryDataFilter] = useState({});
+  const [emotionIntensity, setEmotionIntensity] = useState({
+    veryLow: 0,
+    low: 0,
+    moderate: 0,
+    high: 0,
+    veryHigh: 0
+  });
+  const [topTopics, setTopTopics] = useState([]);
+  const [ratingCorrelation, setRatingCorrelation] = useState([]);
+  const [helpfulReviews, setHelpfulReviews] = useState([]);
+  const [trendData, setTrendData] = useState([]);
 
   // Default chart data structure
   const defaultChartData = {
@@ -106,9 +141,10 @@ const CustomerFeedbackDashboard = () => {
     "Target Gender",
   ];
 
-  const fetchDataFromEndpoint = async (endpoint) => {
+  const fetchDataFromEndpoint = useCallback(async (endpoint) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}`);
+      const { startDate, endDate } = getDateRange();
+      const response = await fetch(`http://localhost:8000/api/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -118,24 +154,116 @@ const CustomerFeedbackDashboard = () => {
       console.error(`Error fetching ${endpoint} data:`, error);
       throw error;
     }
-  };
+  }, [selectedBrand, getDateRange]);
+
+  const fetchEmotionIntensity = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedBrand) params.append('brand', selectedBrand);
+      const { startDate, endDate } = getDateRange();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await fetch(`${API_BASE_URL}/emotion-intensity?${params}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setEmotionIntensity(data);
+    } catch (error) {
+      console.error('Error fetching emotion intensity:', error);
+    }
+  }, [selectedBrand, getDateRange]);
+
+  const fetchTopTopics = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedBrand) params.append('brand', selectedBrand);
+      const { startDate, endDate } = getDateRange();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await fetch(`${API_BASE_URL}/top-topics?${params}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setTopTopics(data);
+    } catch (error) {
+      console.error('Error fetching top topics:', error);
+    }
+  }, [selectedBrand, getDateRange]);
+
+  const fetchRatingCorrelation = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedBrand) params.append('brand', selectedBrand);
+      const { startDate, endDate } = getDateRange();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await fetch(`${API_BASE_URL}/rating-sentiment-correlation?${params}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setRatingCorrelation(data);
+    } catch (error) {
+      console.error('Error fetching rating correlation:', error);
+    }
+  }, [selectedBrand, getDateRange]);
+
+  const fetchHelpfulReviews = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedBrand) params.append('brand', selectedBrand);
+      const { startDate, endDate } = getDateRange();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await fetch(`${API_BASE_URL}/helpful-reviews?${params}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setHelpfulReviews(data);
+    } catch (error) {
+      console.error('Error fetching helpful reviews:', error);
+    }
+  }, [selectedBrand, getDateRange]);
+
+  const fetchTrendData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedBrand) params.append('brand', selectedBrand);
+      const { startDate, endDate } = getDateRange();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await fetch(`${API_BASE_URL}/trend?${params}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setTrendData(data);
+    } catch (error) {
+      console.error('Error fetching trend data:', error);
+    }
+  }, [selectedBrand, getDateRange]);
 
   useEffect(() => {
     const fetchAllData = async () => {
-      setLoading(true);
       try {
         const [
           metricsData,
           sentimentDistData,
           aspectData,
           productsData,
-          keywordsData,
         ] = await Promise.all([
           fetchDataFromEndpoint('metrics'),
           fetchDataFromEndpoint('sentiment-distribution'),
           fetchDataFromEndpoint('aspect-sentiment'),
           fetchDataFromEndpoint('products'),
-          fetchDataFromEndpoint('top-keywords'),
         ]);
 
         setStats(metricsData);
@@ -147,36 +275,22 @@ const CustomerFeedbackDashboard = () => {
           setSelectedProduct(productsData[0].product_id); // Set only the product_id
         }
 
-        setWordCloudData({
-          positive: keywordsData.positive.map((k) => ({
-            text: k[0],  // keyword
-            value: k[1], // frequency
-          })),
-          negative: keywordsData.negative.map((k) => ({
-            text: k[0],  // keyword
-            value: k[1], // frequency
-          })),
-        });
-
-        setError(null);
       } catch (err) {
-        setError('Failed to fetch dashboard data');
         console.error('Error fetching dashboard data:', err);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchAllData();
-  }, [selectedBrand]); // Re-fetch when selected brand changes
+  }, [selectedBrand, getDateRange, fetchDataFromEndpoint]); // Re-fetch when selected brand or date range changes
 
   // Fetch product-specific sentiment when product selection changes
   useEffect(() => {
     const fetchProductSentiment = async () => {
       if (selectedProduct) {
         try {
+          const { startDate, endDate } = getDateRange();
           const response = await fetch(
-            `http://localhost:8000/api/product-reviews/products-review-sentiment/${selectedProduct}?brand=${encodeURIComponent(selectedBrand)}`
+            `http://localhost:8000/api/product-reviews/products-review-sentiment/${selectedProduct}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`
           );
           const data = await response.json();
           setProductSentimentData({
@@ -200,12 +314,11 @@ const CustomerFeedbackDashboard = () => {
             },
           });
         } catch (err) {
-          setError(err.message);
         }
       }
     };
     fetchProductSentiment();
-  }, [selectedProduct, selectedBrand]);
+  }, [selectedProduct, selectedBrand, getDateRange]);
 
   // Fetch category-based sentiment data when filter category changes
   useEffect(() => {
@@ -229,8 +342,9 @@ const CustomerFeedbackDashboard = () => {
             break;
         }
 
+        const { startDate, endDate } = getDateRange();
         const response = await fetch(
-          `http://localhost:8000/api/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}`
+          `http://localhost:8000/api/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`
         );
         const data = await response.json();
 
@@ -288,14 +402,19 @@ const CustomerFeedbackDashboard = () => {
           [filterCategory]: chartData
         }));
       } catch (err) {
-        setError(err.message);
       }
     };
     fetchCategorySentiment();
-  }, [filterCategory, selectedBrand]);
+  }, [filterCategory, selectedBrand, getDateRange]);
 
-  if (loading) return <Typography>Loading...</Typography>;
-  if (error) return <Typography color="error">Error: {error}</Typography>;
+  useEffect(() => {
+    fetchEmotionIntensity();
+    fetchTopTopics();
+    fetchRatingCorrelation();
+    fetchHelpfulReviews();
+    fetchTrendData();
+  }, [selectedBrand, getDateRange, fetchEmotionIntensity, fetchTopTopics, fetchRatingCorrelation, fetchHelpfulReviews, fetchTrendData]);
+
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -317,11 +436,12 @@ const CustomerFeedbackDashboard = () => {
               }}
             >
               <RateReviewIcon sx={{ mr: 1 }} />
-
-              <Typography variant="body1">Total Products</Typography>
+              <Typography variant="body1">Average Rating</Typography>
             </Box>
 
-            <Typography variant="h4">{stats.totalProducts}</Typography>
+            <Typography variant="h4">
+              {stats.averageRating} <span style={{ fontSize: '1rem' }}>/5</span>
+            </Typography>
           </MetricCard>
         </Grid>
 
@@ -383,6 +503,98 @@ const CustomerFeedbackDashboard = () => {
         </Grid>
       </Grid>
 
+      {/* Sentiment and Rating Trend */}
+      <Grid item xs={12}>
+        <ChartCard>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Sentiment and Rating Trend
+            </Typography>
+            <Box sx={{ height: 300 }}>
+              <Line
+                data={{
+                  labels: trendData.map(item => item.date),
+                  datasets: [
+                    {
+                      label: 'Average Rating',
+                      data: trendData.map(item => item.averageRating),
+                      borderColor: '#2196f3',
+                      backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                      yAxisID: 'rating',
+                      tension: 0.4
+                    },
+                    {
+                      label: 'Sentiment Score',
+                      data: trendData.map(item => item.averageSentiment),
+                      borderColor: '#4caf50',
+                      backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                      yAxisID: 'sentiment',
+                      tension: 0.4
+                    }
+                  ]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  interaction: {
+                    mode: 'index',
+                    intersect: false,
+                  },
+                  scales: {
+                    x: {
+                      title: {
+                        display: true,
+                        text: 'Date'
+                      }
+                    },
+                    rating: {
+                      type: 'linear',
+                      display: true,
+                      position: 'left',
+                      title: {
+                        display: true,
+                        text: 'Average Rating'
+                      },
+                      min: 0,
+                      max: 5,
+                      grid: {
+                        drawOnChartArea: false
+                      }
+                    },
+                    sentiment: {
+                      type: 'linear',
+                      display: true,
+                      position: 'right',
+                      title: {
+                        display: true,
+                        text: 'Sentiment Score'
+                      },
+                      min: 0,
+                      max: 1,
+                      grid: {
+                        drawOnChartArea: false
+                      }
+                    }
+                  },
+                  plugins: {
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          const label = context.dataset.label;
+                          const value = context.raw.toFixed(2);
+                          const count = trendData[context.dataIndex].reviewCount;
+                          return `${label}: ${value} (${count} reviews)`;
+                        }
+                      }
+                    }
+                  }
+                }}
+              />
+            </Box>
+          </CardContent>
+        </ChartCard>
+      </Grid>
+
       <Grid container spacing={3}>
         {/* Sentiment Distribution */}
 
@@ -422,37 +634,65 @@ const CustomerFeedbackDashboard = () => {
 
         {/* Volume Feedback per Kategori */}
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={8}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Total Feedback per Kategori
+                Review Emotion Intensity
               </Typography>
-
               <Box sx={{ height: 300 }}>
                 <Bar
                   data={{
-                    labels: ["Produk", "Layanan", "Pengiriman"],
+                    labels: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'],
                     datasets: [
                       {
-                        label: "Total Reviews",
-                        data: [150, 200, 180],
-                        backgroundColor: "#2196f3",
+                        label: 'Percentage of Reviews',
+                        data: [
+                          emotionIntensity.veryLow,
+                          emotionIntensity.low,
+                          emotionIntensity.moderate,
+                          emotionIntensity.high,
+                          emotionIntensity.veryHigh
+                        ],
+                        backgroundColor: [
+                          '#ef5350', // very low - red
+                          '#ff9800', // low - orange
+                          '#ffd54f', // moderate - yellow
+                          '#66bb6a', // high - light green
+                          '#2e7d32'  // very high - dark green
+                        ],
                       },
                     ],
                   }}
                   options={{
                     responsive: true,
-
                     maintainAspectRatio: false,
-
-                    indexAxis: "x",
-
                     scales: {
                       y: {
                         beginAtZero: true,
-                      },
+                        max: Math.max(
+                          emotionIntensity.veryLow,
+                          emotionIntensity.low,
+                          emotionIntensity.moderate,
+                          emotionIntensity.high,
+                          emotionIntensity.veryHigh,
+                          0
+                        ) + 10,
+                        title: {
+                          display: true,
+                          text: 'Percentage of Reviews'
+                        }
+                      }
                     },
+                    plugins: {
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            return `${context.raw}% of reviews`;
+                          }
+                        }
+                      }
+                    }
                   }}
                 />
               </Box>
@@ -519,7 +759,7 @@ const CustomerFeedbackDashboard = () => {
 
         {/* Product Sentiment Analysis */}
 
-        <Grid item xs={12}>
+        <Grid item xs={12} md={8}>
           <ChartCard>
             <CardContent>
               <Box sx={{ mb: 3 }}>
@@ -648,7 +888,7 @@ const CustomerFeedbackDashboard = () => {
 
         {/* Aspect Sentiment Analysis with Filters */}
 
-        <Grid item xs={12}>
+        <Grid item xs={8}>
           <ChartCard>
             <CardContent>
               <Box sx={{ mb: 3 }}>
@@ -888,7 +1128,12 @@ const CustomerFeedbackDashboard = () => {
 
               <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
                     <Box
                       sx={{ width: 16, height: 16, bgcolor: "#00897b", mr: 1 }}
                     />
@@ -909,25 +1154,125 @@ const CustomerFeedbackDashboard = () => {
           </ChartCard>
         </Grid>
 
-        {/* Top Keywords */}
+        {/* Top review topics */}
+        <Grid item xs={12} md={4}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Top Review Topics
+              </Typography>
+              <Box>
+                {topTopics.map((topic, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 1.5,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '50%',
+                          backgroundColor: index < 3 ? 'primary.main' : 'grey.300',
+                          color: index < 3 ? 'white' : 'text.secondary',
+                          fontSize: '0.875rem',
+                          fontWeight: 'bold',
+                          mr: 2
+                        }}
+                      >
+                        {index + 1}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                        {topic.topic}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: 'text.secondary',
+                          backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 4,
+                          fontWeight: 500
+                        }}
+                      >
+                        {topic.count} reviews
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
 
+        {/* Rating vs Sentiment Correlation */}
         <Grid item xs={12} md={6}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Top 10 Positive Keywords
+                Rating vs Sentiment Correlation
               </Typography>
-
-              <Box sx={{ height: 350 }}>
-                <ReactWordcloud
-                  words={wordCloudData.positive}
+              <Box sx={{ height: 300 }}>
+                <Scatter
+                  data={{
+                    datasets: [{
+                      label: 'Reviews',
+                      data: ratingCorrelation.map(item => ({
+                        x: item.rating,
+                        y: item.averageSentiment,
+                        r: Math.sqrt(item.reviewCount) * 5 // Size based on review count
+                      })),
+                      backgroundColor: 'rgba(33, 150, 243, 0.6)',
+                    }]
+                  }}
                   options={{
-                    colors: ["#00897b", "#26a69a", "#4db6ac", "#80cbc4"],
-                    enableTooltip: true,
-                    rotations: 0,
-                    rotationAngles: [0],
-                    fontSizes: [25, 45],
-                    padding: 2,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Rating'
+                        },
+                        min: 0,
+                        max: 5
+                      },
+                      y: {
+                        title: {
+                          display: true,
+                          text: 'Average Sentiment Score'
+                        },
+                        min: 0,
+                        max: 1
+                      }
+                    },
+                    plugins: {
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const data = context.raw;
+                            return [
+                              `Rating: ${data.x}`,
+                              `Sentiment: ${data.y.toFixed(2)}`,
+                              `Reviews: ${ratingCorrelation[context.dataIndex].reviewCount}`
+                            ];
+                          }
+                        }
+                      }
+                    }
                   }}
                 />
               </Box>
@@ -935,75 +1280,50 @@ const CustomerFeedbackDashboard = () => {
           </ChartCard>
         </Grid>
 
-        {/* Negative Keywords Word Cloud */}
-
+        {/* Most Helpful Reviews */}
         <Grid item xs={12} md={6}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Top 10 Negative Keywords
+                Most Helpful Reviews
               </Typography>
-
-              <Box sx={{ height: 350 }}>
-                <ReactWordcloud
-                  words={wordCloudData.negative}
-                  options={{
-                    colors: ["#f44336", "#ef5350", "#e57373", "#ef9a9a"],
-                    enableTooltip: true,
-                    rotations: 0,
-                    rotationAngles: [0],
-                    fontSizes: [25, 45],
-                    padding: 2,
-                  }}
-                />
+              <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
+                {helpfulReviews.map((review, index) => (
+                  <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="subtitle2" color="primary">
+                        {review.productName}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Rating value={review.rating} readOnly size="small" />
+                        <Typography variant="body2" sx={{ ml: 1 }}>
+                          ({review.helpfulVotes} helpful votes)
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Typography variant="body2" sx={{ 
+                      color: review.sentimentScore >= 0.5 ? 'success.main' : 'error.main',
+                      mb: 1 
+                    }}>
+                      Sentiment: {(review.sentimentScore * 100).toFixed(0)}%
+                    </Typography>
+                    <Typography variant="body2" sx={{ 
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {review.review}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
             </CardContent>
           </ChartCard>
         </Grid>
       </Grid>
 
-      {/* AI Dashboard Summary */}
-      {!loading && !error && (
-        <AIDashboardSummary
-          data={{
-            metrics: {
-              totalReviews: stats.totalReviews || 0,
-              averageRating: stats.averageRating || 0,
-              positiveCount: stats.positiveCount || 0,
-              negativeCount: stats.negativeCount || 0,
-              neutralCount: stats.neutralCount || 0
-            },
-            sentiment_distribution: {
-              positive: stats.positiveCount || 0,
-              negative: stats.negativeCount || 0,
-              neutral: stats.neutralCount || 0
-            },
-            sentiment_trend: [{
-              date: new Date().toISOString().split('T')[0],
-              positive: sentimentData.datasets[0].data[0] || 0,
-              negative: sentimentData.datasets[0].data[1] || 0,
-              neutral: 0
-            }],
-            aspect_sentiments: Object.entries(productSentimentData).map(([aspect, data]) => ({
-              aspect,
-              sentiment: data.positive > data.negative ? 'positive' : 'negative',
-              count: data.positive + data.negative
-            })) || [],
-            word_cloud: [
-              ...(wordCloudData.positive || []).map(item => ({
-                text: item.text,
-                value: item.value
-              })),
-              ...(wordCloudData.negative || []).map(item => ({
-                text: item.text,
-                value: item.value
-              }))
-            ],
-            top_reviews: [] // No top reviews data available
-          }}
-          brand={selectedBrand}
-        />
-      )}
     </Box>
   );
 };

@@ -6,7 +6,6 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import PublicIcon from '@mui/icons-material/Public';
 import CompareIcon from '@mui/icons-material/Compare';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 const LeftSidebarContainer = styled(Box)(({ theme }) => ({
@@ -98,18 +97,6 @@ function LeftSidebar({ onTabChange, currentTab }) {
           icon={<CompareIcon />} 
           label="Competitors" 
           iconPosition="start"
-        />
-        <StyledTab 
-          icon={<SmartToyIcon />}
-          label="AI Chatbot"
-          iconPosition="start"
-          sx={{
-            marginTop: 'auto',
-            backgroundColor: currentTab === 7 ? 'rgba(103, 58, 183, 0.1)' : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(103, 58, 183, 0.1)',
-            }
-          }}
         />
       </StyledTabs>
     </LeftSidebarContainer>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Box, 
   Typography, 
@@ -6,7 +6,6 @@ import {
   CardContent, 
   Grid, 
   Paper, 
-  CircularProgress, 
   List, 
   ListItem, 
   ListItemText, 
@@ -36,8 +35,9 @@ import ReactWordcloud from "react-wordcloud";
 import CommentIcon from "@mui/icons-material/Comment";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import AIDashboardSummary from "../AIDashboardSummary";
+// import AIDashboardSummary from "../AIDashboardSummary";
 import { useBrand } from '../../context/BrandContext';
+import { useDate } from "../../context/DateContext";
 
 ChartJS.register(
   CategoryScale, 
@@ -76,8 +76,7 @@ const MetricCard = styled(Paper)(({ theme }) => ({
 
 const SentimentDashboard = () => {
   const { selectedBrand } = useBrand();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { getDateRange } = useDate();
 
   // Data states
   const [overviewData, setOverviewData] = useState({
@@ -110,6 +109,7 @@ const SentimentDashboard = () => {
 
   // Initialize contentSentimentData as an empty array
   const [contentSentiment, setContentSentiment] = useState({});
+  
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return 'N/A';
@@ -125,9 +125,10 @@ const SentimentDashboard = () => {
     return absNum.toString();
   };
 
-  const fetchDataFromEndpoint = async (endpoint) => {
+  const fetchDataFromEndpoint = useCallback(async (endpoint) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/social-media-sentiment/${endpoint}?brand=${encodeURIComponent(selectedBrand)}`);
+      const { startDate, endDate } = getDateRange();
+      const response = await fetch(`http://localhost:8000/api/social-media-sentiment/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
@@ -138,7 +139,7 @@ const SentimentDashboard = () => {
       console.error(`Error fetching ${endpoint}:`, error);
       throw error;
     }
-  };
+  }, [selectedBrand, getDateRange]);
 
   const transformContentSentimentData = (data) => {
     const labels = Object.keys(data);
@@ -169,7 +170,6 @@ const SentimentDashboard = () => {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      setLoading(true);
       try {
         const [overview, platformData, timeSeriesResult, keywordsResult, hashtagsData, commentsData, contentSentimentData] = await Promise.all([
           fetchDataFromEndpoint('overview'),
@@ -220,61 +220,12 @@ const SentimentDashboard = () => {
         setContentSentiment(transformContentSentimentData(contentSentimentData));
 
       } catch (err) {
-        setError('Failed to fetch dashboard data');
         console.error('Error fetching dashboard data:', err);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchAllData();
-  }, [selectedBrand]);
-
-  const contentSentimentOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        stacked: true,
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          callback: (value) => `${value}%`
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Sentiment Distribution by Content Type'
-      }
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography color="error">Error loading dashboard: {error}</Typography>
-      </Box>
-    );
-  }
+  }, [selectedBrand, getDateRange, fetchDataFromEndpoint]);
 
   const wordcloudOptions = {
     rotations: 0, 
@@ -639,27 +590,29 @@ const SentimentDashboard = () => {
         </Grid>
 
       </Grid>
-      {/* AI Dashboard Summary */}
-      {!loading && !error && (
-        <AIDashboardSummary
-          data={{
-            metrics: {
-              totalPosts: overviewData.totalPosts, 
-              positiveCount: overviewData.sentimentDistribution.positive, 
-              negativeCount: overviewData.sentimentDistribution.negative, 
-              neutralCount: 0,
-            },
-            sentimentDistribution: overviewData.sentimentDistribution, 
-            sentimentTrend: timeSeriesData, 
-            topPosts: topComments, 
-            wordCloudData: keywordsData, 
-            selectedBrand: selectedBrand,
-          }}
-          brand={selectedBrand}
-        />
-      )}
+      
     </Box>
   );
 };
 
 export default SentimentDashboard;
+
+// {/* AI Dashboard Summary */}
+// {!loading && !error && (
+//   <AIDashboardSummary
+//     data={{
+//       metrics: {
+//         totalPosts: overviewData.totalPosts, 
+//         positiveCount: overviewData.sentimentDistribution.positive, 
+//         negativeCount: overviewData.sentimentDistribution.negative, 
+//         neutralCount: 0,
+//       },
+//       sentimentDistribution: overviewData.sentimentDistribution, 
+//       sentimentTrend: timeSeriesData, 
+//       topPosts: topComments, 
+//       wordCloudData: keywordsData, 
+//       selectedBrand: selectedBrand,
+//     }}
+//     brand={selectedBrand}
+//   />
+// )}

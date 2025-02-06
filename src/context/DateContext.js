@@ -1,14 +1,20 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const DateContext = createContext();
 
 export const DateProvider = ({ children }) => {
-  const [dateFilter, setDateFilter] = useState('W');
+  const [dateFilter, setDateFilter] = useState(() => {
+    return sessionStorage.getItem('dateFilter') || 'W';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('dateFilter', dateFilter);
+  }, [dateFilter]);
 
   // Helper function to get date range based on filter
   const getDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
+    const endDate = new Date(2025, 0, 31);
+    const startDate = new Date(2025, 0, 31); // Set start date to 2025-01-31 (Manual Code)
 
     switch (dateFilter) {
       case 'W':

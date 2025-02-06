@@ -1,35 +1,50 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { 
   Box, 
   TextField, 
   IconButton, 
-  Paper, 
-  Typography, 
-  Avatar, 
-  styled, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions 
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Menu,
+  MenuItem,
+  Tooltip,
+  CircularProgress,
+  styled
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { deepPurple } from "@mui/material/colors";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ReactMarkdown from "react-markdown";
+import { sendChatMessage } from "../../services/chatService";
 
-const ChatContainer = styled(Box)(({ theme }) => ({
-  height: 'calc(100vh - 64px)',
+const MAX_MESSAGES = 10;
+const INITIAL_MESSAGE = {
+  text: '# Hai Mappers! 👋\nSaya siap membantu Anda menganalisis data dari database.',
+  isUser: false,
+  timestamp: new Date()
+};
+
+const ChatContainer = styled(Box)({
+  height: '100%',
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: '#1e1e1e',
-}));
+  position: 'relative',
+  overflow: 'hidden',
+});
 
-const MessagesContainer = styled(Box)(({ theme }) => ({
+const MessagesContainer = styled(Box)({
   flexGrow: 1,
-  overflow: 'auto',
-  padding: theme.spacing(2),
+  overflowY: 'auto',
+  padding: '16px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',
+  minHeight: 0,
   '&::-webkit-scrollbar': {
     width: '8px',
   },
@@ -40,88 +55,15 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
     background: '#888',
     borderRadius: '4px',
   },
-}));
+});
 
-const InputContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
+const InputContainer = styled(Box)({
+  padding: '16px',
   backgroundColor: '#2d2d2d',
   borderTop: '1px solid #404040',
-}));
+});
 
-const MessageBubble = styled(Paper)(({ isUser, theme }) => ({
-  padding: theme.spacing(1.5),
-  marginBottom: theme.spacing(0.5),
-  maxWidth: '85%',
-  width: 'fit-content',
-  backgroundColor: isUser ? '#2b5278' : '#373737',
-  color: '#fff',
-  borderRadius: 12,
-  fontSize: '0.9rem',
-  ...(isUser && {
-    marginLeft: 'auto',
-  }),
-  '& pre': {
-    margin: '8px 0',
-    padding: '10px',
-    borderRadius: '6px',
-    backgroundColor: '#1e1e1e !important',
-    overflow: 'auto',
-    fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-    fontSize: '0.85rem',
-    maxHeight: '300px',
-  },
-  '& code': {
-    fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-    fontSize: '0.85rem',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    padding: '2px 4px',
-    borderRadius: '4px',
-  },
-  '& p': {
-    margin: '0.3em 0',
-    fontSize: '0.9rem',
-  },
-  '& ul, & ol': {
-    marginLeft: theme.spacing(2),
-    fontSize: '0.9rem',
-  },
-  '& a': {
-    color: '#64b5f6',
-    textDecoration: 'underline',
-  },
-  '& blockquote': {
-    borderLeft: '4px solid #666',
-    margin: '0.5em 0',
-    padding: '0.3em 0.8em',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    fontSize: '0.9rem',
-  },
-  '& h1': {
-    fontSize: '1.2rem',
-    margin: '0.4em 0',
-    fontWeight: 600,
-  },
-  '& h2': {
-    fontSize: '1.1rem',
-    margin: '0.3em 0',
-    fontWeight: 600,
-  },
-  '& h3, & h4, & h5, & h6': {
-    fontSize: '1rem',
-    margin: '0.2em 0',
-    fontWeight: 600,
-  },
-}));
-
-const TimeStamp = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
-  color: '#888',
-  marginTop: '2px',
-  marginBottom: theme.spacing(1),
-  ...(theme.direction === 'ltr' ? { marginLeft: '44px' } : { marginRight: '44px' }),
-}));
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const StyledTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
     backgroundColor: '#373737',
     color: '#fff',
@@ -130,107 +72,230 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
       borderColor: '#5c6bc0',
     },
   },
-}));
+});
 
-const TypingIndicator = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '3px',
-  padding: '8px',
-  '& span': {
-    width: '5px',
-    height: '5px',
-    backgroundColor: '#fff',
-    borderRadius: '50%',
-    animation: 'typing 1s infinite ease-in-out',
-    '&:nth-of-type(1)': {
-      animationDelay: '0s',
-    },
-    '&:nth-of-type(2)': {
-      animationDelay: '0.2s',
-    },
-    '&:nth-of-type(3)': {
-      animationDelay: '0.4s',
-    },
-  },
-  '@keyframes typing': {
-    '0%, 100%': {
-      transform: 'scale(1)',
-      opacity: 0.5,
-    },
-    '50%': {
-      transform: 'scale(1.5)',
-      opacity: 1,
-    },
-  },
-}));
+const formatTimestamp = date => 
+  `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
-const formatTimestamp = (date) => {
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
-};
+// Memoized markdown components
+const MemoizedMarkdown = React.memo(({ text, components }) => (
+  <ReactMarkdown components={components}>{text}</ReactMarkdown>
+));
+
+// Memoized Message component
+const Message = React.memo(({ message }) => {
+  const { text, isUser, isTyping, isError, timestamp } = message;
+  
+  const markdownComponents = useMemo(() => ({
+    p: ({ children }) => <Typography sx={{ m: 0, fontSize: '0.9rem' }}>{children}</Typography>,
+    pre: ({ children }) => (
+      <Box component="pre" sx={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        borderRadius: 1,
+        p: 1,
+        overflowX: 'auto',
+        '& code': {
+          color: '#fff',
+          fontSize: '0.85rem',
+        },
+      }}>{children}</Box>
+    ),
+    code: ({ inline, children }) => inline ? (
+      <Box component="code" sx={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        borderRadius: 0.5,
+        px: 0.5,
+        fontSize: '0.85rem',
+      }}>{children}</Box>
+    ) : <code>{children}</code>,
+    h1: ({ children }) => <Typography variant="h1" sx={{ fontSize: '1.3rem', fontWeight: 'bold', my: 2 }}>{children}</Typography>,
+    h2: ({ children }) => <Typography variant="h2" sx={{ fontSize: '1.1rem', fontWeight: 'bold', my: 1.5 }}>{children}</Typography>,
+    h3: ({ children }) => <Typography variant="h3" sx={{ fontSize: '1rem', fontWeight: 'bold', my: 1 }}>{children}</Typography>,
+    li: ({ children }) => <Typography component="li" sx={{ fontSize: '0.9rem' }}>{children}</Typography>,
+  }), []);
+  
+  return (
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: isUser ? 'flex-end' : 'flex-start',
+      width: '100%',
+    }}>
+      <Box sx={{
+        maxWidth: '70%',
+        backgroundColor: isUser ? '#2196f3' : '#424242',
+        color: '#fff',
+        borderRadius: 2,
+        p: 2,
+        position: 'relative',
+        fontSize: '0.9rem',
+        wordBreak: 'break-word',
+        ...(isError && { backgroundColor: '#d32f2f' }),
+      }}>
+        {isTyping && !text && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={15} sx={{ color: '#fff' }} />
+            <Typography sx={{ fontSize: '0.9rem' }}>AI sedang mencari data</Typography>
+          </Box>
+        )}
+        {text && (
+          <>
+            <MemoizedMarkdown text={text} components={markdownComponents} />
+            {isTyping && (
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                mt: 1,
+                pt: 1,
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <CircularProgress size={12} sx={{ color: '#fff', mr: 1 }} />
+                <Typography sx={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                  AI masih mengetik
+                </Typography>
+              </Box>
+            )}
+          </>
+        )}
+      </Box>
+      {timestamp && (
+        <Typography sx={{ 
+          fontSize: '0.8rem', 
+          color: '#666',
+          mt: 0.5,
+          px: 1
+        }}>
+          {formatTimestamp(timestamp)}
+        </Typography>
+      )}
+    </Box>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.message.text === nextProps.message.text &&
+    prevProps.message.isTyping === nextProps.message.isTyping &&
+    prevProps.message.isError === nextProps.message.isError
+  );
+});
+
+const prebuiltPrompts = [
+  "Analisis tren penjualan dalam 6 bulan terakhir",
+  "Tampilkan top 10 produk dengan penjualan tertinggi",
+  "Bandingkan performa penjualan antar region",
+  "Analisis pola pembelian customer berdasarkan demografi",
+  "Hitung rata-rata nilai transaksi per customer",
+];
 
 const ChatbotDashboard = () => {
-  const initialMessage = {
-    text: '# Hai, Kelvin! 👋\nSaya siap membantu Anda menganalisis data. Beberapa hal yang bisa saya bantu:\n\n- Analisis sentimen\n- Analisis kompetitor\n- Feedback pelanggan\n\nSilakan tanyakan apa saja! 😊',
-    isUser: false,
-    timestamp: new Date()
-  };
-
-  const [messages, setMessages] = useState([initialMessage]);
+  const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
+  const containerRef = useRef(null);
 
-  const scrollToBottom = () => {
+  const memoizedMessages = useMemo(() => {
+    const recentMessages = messages.slice(-MAX_MESSAGES);
+    console.log(`Chat history size: ${messages.length} messages, displaying last ${recentMessages.length}`);
+    return recentMessages;
+  }, [messages]);
+
+  // Handle resize observer
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [memoizedMessages, scrollToBottom]);
 
-  const handleSend = () => {
-    if (input.trim()) {
-      const now = new Date();
-      setMessages([...messages, { text: input, isUser: true, timestamp: now }]);
-      setInput('');
-      setIsTyping(true);
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-      // Simulate bot response
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages(prev => [...prev, {
-          text: 'Terima kasih atas pertanyaannya. Saya akan membantu menganalisis data sesuai dengan kebutuhan Anda. Mari kita mulai dengan mengidentifikasi poin-poin penting dari data yang ada.',
-          isUser: false,
-          timestamp: new Date(now.getTime() + 2000)
-        }]);
-      }, 2000);
+    const userMessage = { text: input, isUser: true, timestamp: new Date() };
+    const aiMessage = { text: "", isUser: false, isTyping: true, timestamp: new Date() };
+
+    setMessages(prev => {
+      const newMessages = [...prev, userMessage, aiMessage];
+      return newMessages.length > MAX_MESSAGES ? newMessages.slice(-MAX_MESSAGES) : newMessages;
+    });
+    
+    setInput("");
+    setAnchorEl(null);
+    
+    let streamedText = "";
+    try {
+      await sendChatMessage(input, (chunk) => {
+        streamedText += chunk;
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const aiMessageIndex = newMessages.length - 1;
+          newMessages[aiMessageIndex] = {
+            ...newMessages[aiMessageIndex],
+            text: streamedText,
+            isTyping: true
+          };
+          return newMessages.length > MAX_MESSAGES ? newMessages.slice(-MAX_MESSAGES) : newMessages;
+        });
+      });
+
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const aiMessageIndex = newMessages.length - 1;
+        newMessages[aiMessageIndex] = {
+          ...newMessages[aiMessageIndex],
+          text: streamedText,
+          isTyping: false
+        };
+        return newMessages.length > MAX_MESSAGES ? newMessages.slice(-MAX_MESSAGES) : newMessages;
+      });
+    } catch (error) {
+      console.error('Error in chat:', error);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const aiMessageIndex = newMessages.length - 1;
+        newMessages[aiMessageIndex] = {
+          ...newMessages[aiMessageIndex],
+          text: "Maaf, terjadi kesalahan dalam memproses pesan Anda. Silakan coba lagi.",
+          isTyping: false,
+          isError: true
+        };
+        return newMessages.length > MAX_MESSAGES ? newMessages.slice(-MAX_MESSAGES) : newMessages;
+      });
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleReset = () => {
-    setOpenConfirmDialog(true);
-  };
-
-  const confirmReset = () => {
-    setMessages([{ ...initialMessage, timestamp: new Date() }]);
-    setInput('');
-    setIsTyping(false);
+  const handleReset = () => setOpenConfirmDialog(true);
+  const handleConfirmReset = () => {
+    fetch(`http://localhost:8000/api/ai/chat/reset`, {
+      method: 'POST',
+    });
+    setMessages([INITIAL_MESSAGE]);
     setOpenConfirmDialog(false);
+  };
+  const handleCancelReset = () => setOpenConfirmDialog(false);
+  const handlePromptClick = (event) => setAnchorEl(event.currentTarget);
+  const handlePromptClose = () => setAnchorEl(null);
+  const handlePromptSelect = (prompt) => {
+    setInput(prompt);
+    handlePromptClose();
   };
 
   return (
-    <ChatContainer>
+    <ChatContainer ref={containerRef}>
       <Box sx={{ 
         position: 'relative', 
         borderBottom: '1px solid #404040',
@@ -240,104 +305,112 @@ const ChatbotDashboard = () => {
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        <Typography variant="subtitle1" sx={{ color: '#fff', fontSize: '0.9rem' }}>
-          Chat Assistant
-        </Typography>
-        <Button
-          startIcon={<RestartAltIcon />}
-          onClick={handleReset}
-          sx={{
-            color: '#fff',
-            fontSize: '0.8rem',
-            textTransform: 'none',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
-          Reset Chat
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="subtitle1" sx={{ color: '#fff', fontSize: '0.9rem' }}>
+            Chat Assistant
+          </Typography>
+          <Button
+            startIcon={<RestartAltIcon />}
+            onClick={handleReset}
+            size="small"
+            sx={{
+              color: '#fff',
+              fontSize: '0.8rem',
+              textTransform: 'none',
+              ml: 2,
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
+            Reset Chat
+          </Button>
+        </Box>
       </Box>
 
       <MessagesContainer>
-        {messages.map((message, index) => (
-          <Box key={index}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 0.5 }}>
-              {!message.isUser && (
-                <Avatar
-                  sx={{
-                    bgcolor: deepPurple[500],
-                    mr: 1,
-                    width: 28,
-                    height: 28,
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  AI
-                </Avatar>
-              )}
-              <MessageBubble isUser={message.isUser}>
-                <ReactMarkdown>{message.text}</ReactMarkdown>
-              </MessageBubble>
-            </Box>
-            <TimeStamp align={message.isUser ? 'right' : 'left'}>
-              {formatTimestamp(message.timestamp)}
-            </TimeStamp>
-          </Box>
+        {memoizedMessages.map((message, index) => (
+          <Message 
+            key={`${message.timestamp.getTime()}-${index}`} 
+            message={message} 
+          />
         ))}
-        {isTyping && (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-            <Avatar
-              sx={{
-                bgcolor: deepPurple[500],
-                mr: 1,
-                width: 28,
-                height: 28,
-                fontSize: '0.9rem',
-              }}
-            >
-              AI
-            </Avatar>
-            <MessageBubble>
-              <TypingIndicator>
-                <span />
-                <span />
-                <span />
-              </TypingIndicator>
-            </MessageBubble>
-          </Box>
-        )}
         <div ref={messagesEndRef} />
       </MessagesContainer>
-      
+
       <InputContainer>
+        <Box sx={{ mb: 2 }}>
+          <Tooltip title="Pilih prompt yang sudah disiapkan">
+            <Button
+              onClick={handlePromptClick}
+              startIcon={<KeyboardArrowUpIcon />}
+              sx={{
+                color: '#fff',
+                fontSize: '0.8rem',
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              Prompt Templates
+            </Button>
+          </Tooltip>
+        </Box>
         <StyledTextField
           fullWidth
           multiline
           maxRows={4}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Ketik pesan Anda di sini..."
-          variant="outlined"
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Ketik pesan..."
           InputProps={{
             endAdornment: (
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton size="small" color="inherit">
-                  <AttachFileIcon />
-                </IconButton>
-                <IconButton size="small" color="inherit" onClick={handleSend}>
-                  <SendIcon />
-                </IconButton>
-              </Box>
+              <IconButton onClick={handleSend} sx={{ color: '#fff' }}>
+                <SendIcon />
+              </IconButton>
             ),
           }}
         />
       </InputContainer>
 
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handlePromptClose}
+        PaperProps={{
+          sx: {
+            backgroundColor: '#2d2d2d',
+            color: '#fff',
+            maxHeight: 300,
+          }
+        }}
+      >
+        {prebuiltPrompts.map((prompt, index) => (
+          <MenuItem
+            key={index}
+            onClick={() => handlePromptSelect(prompt)}
+            sx={{
+              fontSize: '0.9rem',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
+          >
+            {prompt}
+          </MenuItem>
+        ))}
+      </Menu>
+
       <Dialog
         open={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
+        onClose={handleCancelReset}
         PaperProps={{
           sx: {
             backgroundColor: '#2d2d2d',
@@ -350,28 +423,14 @@ const ChatbotDashboard = () => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: '0.9rem' }}>
-            Apakah Anda yakin ingin memulai chat baru? Semua riwayat chat akan dihapus.
+            Apakah Anda yakin ingin menghapus semua riwayat chat?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button 
-            onClick={() => setOpenConfirmDialog(false)}
-            sx={{ 
-              color: '#fff',
-              fontSize: '0.8rem',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              }
-            }}
-          >
+          <Button onClick={handleCancelReset} sx={{ color: '#fff', fontSize: '0.9rem' }}>
             Batal
           </Button>
-          <Button 
-            onClick={confirmReset}
-            variant="contained" 
-            color="error"
-            sx={{ fontSize: '0.8rem' }}
-          >
+          <Button onClick={handleConfirmReset} sx={{ color: '#f44336', fontSize: '0.9rem' }}>
             Reset
           </Button>
         </DialogActions>
@@ -380,4 +439,4 @@ const ChatbotDashboard = () => {
   );
 };
 
-export default ChatbotDashboard;
+export default React.memo(ChatbotDashboard);

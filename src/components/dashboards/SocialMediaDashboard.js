@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Box, Typography, Card, CardContent, Grid, Paper} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import {
@@ -17,7 +17,7 @@ import { Line, Bar } from "react-chartjs-2";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import CommentIcon from "@mui/icons-material/Comment";
-import AIDashboardSummary from "../AIDashboardSummary";
+// import AIDashboardSummary from "../AIDashboardSummary";
 import { useBrand } from "../../context/BrandContext";
 import { useDate } from "../../context/DateContext";
 
@@ -72,40 +72,36 @@ const SocialMediaDashboard = () => {
     return absNum.toString();
   };
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [metrics, setMetrics] = useState({
     totalEngagement: null,
     reach: null,
     impressions: null,
     totalPosts: null
   });
-  const [timeSeriesData, setTimeSeriesData] = useState({
+  const [engagementTrend, setEngagementTrend] = useState({
+    labels: [],
+    datasets: []
+  });
+  const [reachTrend, setReachTrend] = useState({
     labels: [],
     datasets: []
   });
   const [contentPerformance, setContentPerformance] = useState({
-    labels: [],
-    datasets: []
+    engagement: {
+      labels: [],
+      datasets: []
+    },
+    reach: {
+      labels: [],
+      datasets: []
+    }
   });
   const [platformPerformance, setPlatformPerformance] = useState({
     labels: [],
     datasets: []
   });
-  
-  // Dummy data for peak activity
-  const [peakActivity] = useState({
-    labels: ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM"],
-    datasets: [{
-      label: "Engagement Level",
-      data: [20, 45, 65, 85, 95, 75],
-      backgroundColor: "#00695c",
-      borderColor: "#00695c",
-      tension: 0.4
-    }]
-  });
-  
-  const [topPosts, setTopPosts] = useState([]);  
+  const [topPostsByReach, setTopPostsByReach] = useState([]);  
+  const [topPostsByEngagement, setTopPostsByEngagement] = useState([]);  
   const [topHashtags, setTopHashtags] = useState({
     byReach: [],
     byEngagement: []
@@ -115,35 +111,43 @@ const SocialMediaDashboard = () => {
     byEngagement: []
   });
 
+  // Dummy data for peak activity
+  const [peakActivity] = useState({
+      labels: ["6AM", "9AM", "12PM", "3PM", "6PM", "9PM"],
+      datasets: [{
+        label: "Engagement Level",
+        data: [20, 45, 65, 85, 95, 75],
+        backgroundColor: "#00695c",
+        borderColor: "#00695c",
+        tension: 0.4
+      }]
+  });
+
   const { selectedBrand } = useBrand();
   const { getDateRange } = useDate();
 
-  const fetchDataFromEndpoint = async (endpoint) => {
+  const fetchDataFromEndpoint = useCallback(async (endpoint) => {
     try {
       const { startDate, endDate } = getDateRange();
       const response = await fetch(`http://localhost:8000/api/social-media/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
       const data = await response.json();
       return data;
     } catch (error) {
       console.error(`Error fetching ${endpoint} data:`, error);
       throw error;
     }
-  };
+  }, [selectedBrand, getDateRange]);
 
   useEffect(() => {
     const fetchAllData = async () => {
-      setLoading(true);
-      setError(null);
       try {
         const [
           metricsData,
           timeSeriesResult,
           contentData,
           platformData,
-          postsData,
+          postsReachData,
+          postsEngagementData,
           hashtagsData,
           collaboratorsData
         ] = await Promise.all([
@@ -152,51 +156,95 @@ const SocialMediaDashboard = () => {
           fetchDataFromEndpoint("content-performance"),
           fetchDataFromEndpoint("platform-performance"),
           fetchDataFromEndpoint("top-posts/reach"),
+          fetchDataFromEndpoint("top-posts/engagement"),
           fetchDataFromEndpoint("top-hashtags"),
           fetchDataFromEndpoint("top-collaborators")
         ]);
 
         setMetrics(metricsData);
-        setTimeSeriesData(timeSeriesResult);
-        setContentPerformance(contentData);
+        
+        // Extract engagement and reach datasets from timeSeriesResult
+        const engagementDataset = timeSeriesResult.datasets.find(d => d.label === "Engagement");
+        const reachDataset = timeSeriesResult.datasets.find(d => d.label === "Reach");
+        
+        // Separate engagement and reach trends
+        setEngagementTrend({
+          labels: timeSeriesResult.labels,
+          datasets: [{
+            label: "Engagement",
+            data: engagementDataset?.data || [],
+            borderColor: "#00897b",
+            backgroundColor: "rgba(0, 137, 123, 0.1)",
+            tension: 0.4,
+            fill: true
+          }]
+        });
+        
+        setReachTrend({
+          labels: timeSeriesResult.labels,
+          datasets: [{
+            label: "Reach",
+            data: reachDataset?.data || [],
+            borderColor: "#2196f3",
+            backgroundColor: "rgba(33, 150, 243, 0.1)",
+            tension: 0.4,
+            fill: true
+          }]
+        });
+
+        setContentPerformance({
+          engagement: {
+            labels: contentData.engagement.labels,
+            datasets: [{
+              label: "Engagement Rate",
+              data: contentData.engagement.datasets[0].data,
+              rate: contentData.engagement.datasets[0].rate,
+              backgroundColor: "#00897b",
+              borderColor: "#00897b",
+              barThickness: 30
+            }]
+          },
+          reach: {
+            labels: contentData.reach.labels,
+            datasets: [{
+              label: "Reach Rate",
+              data: contentData.reach.datasets[0].data,
+              rate: contentData.reach.datasets[0].rate,
+              backgroundColor: "#2196f3",
+              borderColor: "#2196f3",
+              barThickness: 30
+            }]
+          }
+        });
         setPlatformPerformance(platformData);
-        setTopPosts(Array.isArray(postsData) ? postsData : []);
+        setTopPostsByReach(postsReachData);
+        setTopPostsByEngagement(postsEngagementData);
         setTopHashtags(hashtagsData);
         setTopCollaborators(collaboratorsData);
 
       } catch (err) {
-        setError(err.message);
         console.error("Error fetching dashboard data:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
     if (selectedBrand) {
       fetchAllData();
     }
-  }, [selectedBrand, getDateRange]);
-
-  if (loading) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography>Loading dashboard data...</Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography color="error">Error loading dashboard: {error}</Typography>
-      </Box>
-    );
-  }
+  }, [selectedBrand, getDateRange, fetchDataFromEndpoint]);
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
+      x: {
+        ticks: {
+          callback: function(value, index) {
+            // Convert YYYY-MM-DD to DD/MM format
+            const date = new Date(this.getLabelForValue(index));
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+          }
+        }
+      },
       y: {
         beginAtZero: true,
         ticks: {
@@ -209,6 +257,10 @@ const SocialMediaDashboard = () => {
     plugins: {
       tooltip: {
         callbacks: {
+          title: function(context) {
+            // Show full date in tooltip (YYYY-MM-DD)
+            return context[0].label;
+          },
           label: function(context) {
             return `${context.dataset.label}: ${formatNumber(context.raw)}`;
           }
@@ -266,8 +318,40 @@ const SocialMediaDashboard = () => {
 
       {/* Engagement Trends */}
       <Grid container spacing={3}>
-        {/* Platform Distribution */}
-        <Grid item xs={12} md={4}>
+
+        <Grid item xs={12} md={6}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Engagement Trends
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Line
+                  data={engagementTrend}
+                  options={chartOptions}
+                />
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Reach Trends
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Line
+                  data={reachTrend}
+                  options={chartOptions}
+                />
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
+        <Grid item xs={12} md={3}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -308,55 +392,177 @@ const SocialMediaDashboard = () => {
           </ChartCard>
         </Grid>
 
-        <Grid item xs={12} md={8}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Engagement and Reach Trends
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Line
-                  data={timeSeriesData}
-                  options={chartOptions}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
+          {/* Content Performance */}
+          <Grid item xs={12} md={4}>
+            <ChartCard>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Performance by Content Type
+                </Typography>
+                <Box sx={{ height: 400, display: 'flex', flexDirection: 'column' }}>
+                  <Box sx={{ height: '48%', mb: 2 }}>
+                    <Typography variant="subtitle2" color="primary" gutterBottom>
+                      Engagement Rate
+                    </Typography>
+                    <Bar
+                      data={contentPerformance.engagement}
+                      options={{
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          tooltip: {
+                            callbacks: {
+                              label: (context) => {
+                                const dataset = context.dataset;
+                                return [
+                                  `Posts: ${formatNumber(dataset.data[context.dataIndex])}`,
+                                  `Rate: ${dataset.rate[context.dataIndex].toFixed(2)}%`
+                                ];
+                              }
+                            }
+                          },
+                          legend: {
+                            display: false
+                          }
+                        },
+                        scales: {
+                          x: {
+                            beginAtZero: true,
+                            grid: {
+                              display: true
+                            },
+                            title: {
+                              display: true,
+                              text: 'Number of Posts'
+                            }
+                          },
+                          y: {
+                            grid: {
+                              display: false
+                            }
+                          }
+                        },
+                        layout: {
+                          padding: {
+                            right: 10
+                          }
+                        }
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ height: '48%' }}>
+                    <Typography variant="subtitle2" color="primary" gutterBottom>
+                      Reach Rate
+                    </Typography>
+                    <Bar
+                      data={contentPerformance.reach}
+                      options={{
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          tooltip: {
+                            callbacks: {
+                              label: (context) => {
+                                const dataset = context.dataset;
+                                return [
+                                  `Posts: ${formatNumber(dataset.data[context.dataIndex])}`,
+                                  `Rate: ${dataset.rate[context.dataIndex].toFixed(2)}%`
+                                ];
+                              }
+                            }
+                          },
+                          legend: {
+                            display: false
+                          }
+                        },
+                        scales: {
+                          x: {
+                            beginAtZero: true,
+                            grid: {
+                              display: true
+                            },
+                            title: {
+                              display: true,
+                              text: 'Number of Posts'
+                            }
+                          },
+                          y: {
+                            grid: {
+                              display: false
+                            }
+                          }
+                        },
+                        layout: {
+                          padding: {
+                            right: 10
+                          }
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </CardContent>
+            </ChartCard>
+          </Grid>
 
-        {/* Content Performance */}
-        <Grid item xs={12} md={4}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Performance by Content Type
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Bar
-                  data={contentPerformance}
-                  options={chartOptions}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
-        {/* Peak Activity Times */}
-        <Grid item xs={12} md={8}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Total Engagement by Posting Time
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Bar
-                  data={peakActivity}
-                  options={chartOptions}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
+          {/* Peak Activity Times */}
+          <Grid item xs={12} md={5}>
+            <ChartCard>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Total Engagement by Posting Time
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <Bar
+                    data={peakActivity}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: true,
+                          position: 'top'
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              return `${context.dataset.label}: ${formatNumber(context.raw)}`;
+                            }
+                          }
+                        }
+                      },
+                      scales: {
+                        x: {
+                          grid: {
+                            display: true
+                          },
+                          ticks: {
+                            callback: function(value, index) {
+                              const times = ['12AM', '4AM', '8AM', '12PM', '4PM', '8PM'];
+                              return times[index] || '';
+                            }
+                          }
+                        },
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            display: true
+                          },
+                          ticks: {
+                            callback: function(value) {
+                              return formatNumber(value);
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </Box>
+              </CardContent>
+            </ChartCard>
+          </Grid>
 
         {/* Top Posts by Reach */}
         <Grid item xs={12} md={6}>
@@ -366,7 +572,7 @@ const SocialMediaDashboard = () => {
                 Top 5 Posts by Reach
               </Typography>
               <Box>
-                {Array.isArray(topPosts) && topPosts.map((post, index) => (
+                {Array.isArray(topPostsByReach) && topPostsByReach.map((post, index) => (
                   <Box
                     key={index}
                     sx={{
@@ -374,7 +580,7 @@ const SocialMediaDashboard = () => {
                       justifyContent: "space-between",
                       alignItems: "center",
                       py: 1,
-                      borderBottom: index < topPosts.length - 1 ? "1px solid #eee" : "none"
+                      borderBottom: index < topPostsByReach.length - 1 ? "1px solid #eee" : "none"
                     }}
                   >
                     <Box sx={{ flex: 1 }}>
@@ -414,7 +620,7 @@ const SocialMediaDashboard = () => {
                 Top 5 Posts by Engagement
               </Typography>
               <Box>
-                {Array.isArray(topPosts) && topPosts.map((post, index) => (
+                {Array.isArray(topPostsByEngagement) && topPostsByEngagement.map((post, index) => (
                   <Box
                     key={index}
                     sx={{
@@ -422,7 +628,7 @@ const SocialMediaDashboard = () => {
                       justifyContent: "space-between",
                       alignItems: "center",
                       py: 1,
-                      borderBottom: index < topPosts.length - 1 ? "1px solid #eee" : "none"
+                      borderBottom: index < topPostsByEngagement.length - 1 ? "1px solid #eee" : "none"
                     }}
                   >
                     <Box sx={{ flex: 1 }}>
@@ -445,7 +651,7 @@ const SocialMediaDashboard = () => {
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="primary" sx={{ ml: 2 }}>
-                      {post.engagement ? formatNumber(post.engagement) : "N/A"} engagement
+                      {post.engagement ? formatNumber(post.engagement) : "N/A"} Engagement
                     </Typography>
                   </Box>
                 ))}
@@ -628,22 +834,23 @@ const SocialMediaDashboard = () => {
         </Grid>
       </Grid>
 
-      {/* AI Summary Section */}
-      {!loading && !error && (
-        <AIDashboardSummary
-          dashboardType="social"
-          data={{
-            metrics,
-            timeSeriesData,
-            contentPerformance,
-            platformPerformance,
-            selectedBrand: selectedBrand
-          }}
-          brand={selectedBrand}
-        />
-      )}
     </Box>
   );
 };
 
 export default SocialMediaDashboard;
+
+      // {/* AI Summary Section */}
+      // {!loading && !error && (
+      //   <AIDashboardSummary
+      //     dashboardType="social"
+      //     data={{
+      //       metrics,
+      //       timeSeriesData,
+      //       contentPerformance,
+      //       platformPerformance,
+      //       selectedBrand: selectedBrand
+      //     }}
+      //     brand={selectedBrand}
+      //   />
+      // )}
