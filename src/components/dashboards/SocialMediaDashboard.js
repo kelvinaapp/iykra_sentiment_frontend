@@ -33,6 +33,8 @@ ChartJS.register(
   ArcElement
 );
 
+const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
+
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: "#fff",
   backgroundColor: "#00897b",
@@ -129,7 +131,7 @@ const SocialMediaDashboard = () => {
   const fetchDataFromEndpoint = useCallback(async (endpoint) => {
     try {
       const { startDate, endDate } = getDateRange();
-      const response = await fetch(`http://localhost:8000/api/social-media/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
+      const response = await fetch(`${API_BASE_URL}/social-media/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
       const data = await response.json();
       return data;
     } catch (error) {

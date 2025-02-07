@@ -26,7 +26,7 @@ import {
 import { useBrand } from '../../context/BrandContext';
 import { useDate } from '../../context/DateContext';
 
-const API_BASE_URL = 'http://localhost:8000/api/sales'
+const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: '#fff',
@@ -88,27 +88,27 @@ const SalesPerformanceDashboard = () => {
         params.append('endDate', endDate);
         
         // Fetch daily sales data
-        const salesResponse = await fetch(`${API_BASE_URL}/daily-sales?${params}`);
+        const salesResponse = await fetch(`${API_BASE_URL}/sales/daily-sales?${params}`);
         const salesData = await salesResponse.json();
         setDailySalesData(salesData);
 
         // Fetch product category data
-        const categoryResponse = await fetch(`${API_BASE_URL}/product-categories?${params}`);
+        const categoryResponse = await fetch(`${API_BASE_URL}/sales/product-categories?${params}`);
         const categoryData = await categoryResponse.json();
         setProductCategoryData(categoryData);
 
         // Fetch return rate data
-        const returnResponse = await fetch(`${API_BASE_URL}/return-rates?${params}`);
+        const returnResponse = await fetch(`${API_BASE_URL}/sales/return-rates?${params}`);
         const returnData = await returnResponse.json();
         setReturnRateData(returnData);
 
         // Fetch location data
-        const locationResponse = await fetch(`${API_BASE_URL}/customer-locations?${params}`);
+        const locationResponse = await fetch(`${API_BASE_URL}/sales/customer-locations?${params}`);
         const locationData = await locationResponse.json();
         setLocationData(locationData);
 
         // Fetch demographics data
-        const demographicsResponse = await fetch(`${API_BASE_URL}/demographics?${params}`);
+        const demographicsResponse = await fetch(`${API_BASE_URL}/sales/demographics?${params}`);
         const demographicsData = await demographicsResponse.json();
         setGenderData(demographicsData.gender);
         setAgeData(demographicsData.age);

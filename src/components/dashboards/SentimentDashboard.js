@@ -51,6 +51,8 @@ ChartJS.register(
   ArcElement
 );
 
+const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
+
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: "#fff", 
   backgroundColor: "#00897b", 
@@ -128,7 +130,7 @@ const SentimentDashboard = () => {
   const fetchDataFromEndpoint = useCallback(async (endpoint) => {
     try {
       const { startDate, endDate } = getDateRange();
-      const response = await fetch(`http://localhost:8000/api/social-media-sentiment/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
+      const response = await fetch(`${API_BASE_URL}/social-media-sentiment/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
@@ -213,6 +215,7 @@ const SentimentDashboard = () => {
           ],
         });
 
+        console.log(hashtagsData)
         setKeywordsData(keywordsResult);
         setTrendingHashtags(hashtagsData);
         setTopComments(commentsData);

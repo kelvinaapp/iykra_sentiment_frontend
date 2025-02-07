@@ -21,6 +21,8 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ReactMarkdown from "react-markdown";
 import { sendChatMessage } from "../../services/chatService";
 
+const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
+
 const MAX_MESSAGES = 10;
 const INITIAL_MESSAGE = {
   text: '# Hai Mappers! 👋\nSaya siap membantu Anda menganalisis data dari database.',
@@ -280,7 +282,7 @@ const ChatbotDashboard = () => {
 
   const handleReset = () => setOpenConfirmDialog(true);
   const handleConfirmReset = () => {
-    fetch(`http://localhost:8000/api/ai/chat/reset`, {
+    fetch(`${API_BASE_URL}/ai/chat/reset`, {
       method: 'POST',
     });
     setMessages([INITIAL_MESSAGE]);

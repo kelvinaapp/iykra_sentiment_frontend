@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useBrand } from '../../context/BrandContext';
 import { useDate } from "../../context/DateContext";
-import { Box, Typography, Card, CardContent, Grid, Paper, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Box, Typography, Card, CardContent, Grid, Paper, InputLabel, FormControl, Select, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { 
   Chart as ChartJS, 
@@ -27,7 +27,7 @@ import Rating from '@mui/material/Rating';
 
 // import AIDashboardSummary from "../AIDashboardSummary";
 
-const API_BASE_URL = 'http://localhost:8000/api/product-reviews';
+const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
 
 ChartJS.register(
   CategoryScale, 
@@ -144,7 +144,7 @@ const CustomerFeedbackDashboard = () => {
   const fetchDataFromEndpoint = useCallback(async (endpoint) => {
     try {
       const { startDate, endDate } = getDateRange();
-      const response = await fetch(`http://localhost:8000/api/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
+      const response = await fetch(`${API_BASE_URL}/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -164,7 +164,7 @@ const CustomerFeedbackDashboard = () => {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const response = await fetch(`${API_BASE_URL}/emotion-intensity?${params}`);
+      const response = await fetch(`${API_BASE_URL}/product-reviews/emotion-intensity?${params}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -183,7 +183,7 @@ const CustomerFeedbackDashboard = () => {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const response = await fetch(`${API_BASE_URL}/top-topics?${params}`);
+      const response = await fetch(`${API_BASE_URL}/product-reviews/top-topics?${params}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -202,7 +202,7 @@ const CustomerFeedbackDashboard = () => {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const response = await fetch(`${API_BASE_URL}/rating-sentiment-correlation?${params}`);
+      const response = await fetch(`${API_BASE_URL}/product-reviews/rating-sentiment-correlation?${params}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -221,7 +221,7 @@ const CustomerFeedbackDashboard = () => {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const response = await fetch(`${API_BASE_URL}/helpful-reviews?${params}`);
+      const response = await fetch(`${API_BASE_URL}/product-reviews/helpful-reviews?${params}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -240,7 +240,7 @@ const CustomerFeedbackDashboard = () => {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const response = await fetch(`${API_BASE_URL}/trend?${params}`);
+      const response = await fetch(`${API_BASE_URL}/product-reviews/trend?${params}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -290,7 +290,7 @@ const CustomerFeedbackDashboard = () => {
         try {
           const { startDate, endDate } = getDateRange();
           const response = await fetch(
-            `http://localhost:8000/api/product-reviews/products-review-sentiment/${selectedProduct}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`
+            `${API_BASE_URL}/product-reviews/products-review-sentiment/${selectedProduct}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`
           );
           const data = await response.json();
           setProductSentimentData({
@@ -344,7 +344,7 @@ const CustomerFeedbackDashboard = () => {
 
         const { startDate, endDate } = getDateRange();
         const response = await fetch(
-          `http://localhost:8000/api/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`
+          `${API_BASE_URL}/product-reviews/${endpoint}?brand=${encodeURIComponent(selectedBrand)}&startDate=${startDate}&endDate=${endDate}`
         );
         const data = await response.json();
 
@@ -767,10 +767,11 @@ const CustomerFeedbackDashboard = () => {
                   Sentimen Produk per Aspek
                 </Typography>
 
-                <FormControl fullWidth size="small">
-                  <InputLabel>Pilih Produk</InputLabel>
+                <FormControl id="product-select" fullWidth size="small" >
+                  <InputLabel id="product-select-label">Pilih Produk</InputLabel>
 
                   <Select
+                    id="product-select-dropdown"
                     value={selectedProduct}
                     label="Pilih Produk"
                     onChange={(e) => setSelectedProduct(e.target.value)}
@@ -898,10 +899,11 @@ const CustomerFeedbackDashboard = () => {
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={4}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Kategori</InputLabel>
+                    <FormControl id="category-select" fullWidth size="small" >
+                      <InputLabel id="category-select-label">Kategori</InputLabel>
 
                       <Select
+                        id="category-select-dropdown"
                         value={filterCategory}
                         label="Kategori"
                         onChange={(e) => setFilterCategory(e.target.value)}

@@ -44,7 +44,8 @@ const HeaderContent = styled(Box)({
   justifyContent: 'center',
 });
 
-const StyledTableCell = styled(TableCell)(({ theme, brand, isHeader, isMarketAvg }) => ({
+// Separate styled components for header and regular cells
+const HeaderTableCell = styled(TableCell)(({ theme }) => ({
   padding: '8px 16px',
   fontSize: 14,
   whiteSpace: 'nowrap',
@@ -52,7 +53,7 @@ const StyledTableCell = styled(TableCell)(({ theme, brand, isHeader, isMarketAvg
   textOverflow: 'ellipsis',
   borderRight: `1px solid ${theme.palette.divider}`,
   borderBottom: `1px solid ${theme.palette.divider}`,
-  width: brand ? '14%' : '16%',
+  width: '14%',
   textAlign: 'center',
   '&:first-of-type': {
     width: '20%',
@@ -60,37 +61,69 @@ const StyledTableCell = styled(TableCell)(({ theme, brand, isHeader, isMarketAvg
   '&:last-child': {
     borderRight: 'none',
   },
-  ...(isHeader && {
-    backgroundColor: theme.palette.grey[100],
-    fontWeight: 'bold',
-    color: theme.palette.text.primary,
-  }),
-  ...(isMarketAvg && {
-    position: 'relative',
-    background: 'linear-gradient(45deg, transparent 10px, #fff 10px)',
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: '10px',
-      borderRight: `1px solid ${theme.palette.divider}`,
-    }
-  }),
-  ...(brand === 'adidas' && {
+  backgroundColor: theme.palette.grey[100],
+  fontWeight: 'bold',
+  color: theme.palette.text.primary,
+}));
+
+const MarketAvgTableCell = styled(TableCell)(({ theme }) => ({
+  padding: '8px 16px',
+  fontSize: 14,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  borderRight: `1px solid ${theme.palette.divider}`,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  width: '14%',
+  textAlign: 'center',
+  '&:first-of-type': {
+    width: '20%',
+  },
+  '&:last-child': {
+    borderRight: 'none',
+  },
+  position: 'relative',
+  background: 'linear-gradient(45deg, transparent 10px, #fff 10px)',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: '10px',
+    borderRight: `1px solid ${theme.palette.divider}`,
+  }
+}));
+
+const BrandTableCell = styled(TableCell)(({ theme, brandname }) => ({
+  padding: '8px 16px',
+  fontSize: 14,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  borderRight: `1px solid ${theme.palette.divider}`,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  width: '14%',
+  textAlign: 'center',
+  '&:first-of-type': {
+    width: '20%',
+  },
+  '&:last-child': {
+    borderRight: 'none',
+  },
+  ...(brandname === 'adidas' && {
     backgroundColor: 'rgba(66, 133, 244, 0.1)',
   }),
-  ...(brand === 'nike' && {
+  ...(brandname === 'nike' && {
     backgroundColor: 'rgba(234, 67, 53, 0.1)',
   }),
-  ...(brand === 'puma' && {
+  ...(brandname === 'puma' && {
     backgroundColor: 'rgba(251, 188, 4, 0.1)',
   }),
-  ...(brand === 'reebok' && {
+  ...(brandname === 'reebok' && {
     backgroundColor: 'rgba(52, 168, 83, 0.1)',
   }),
-  ...(brand === 'converse' && {
+  ...(brandname === 'converse' && {
     backgroundColor: 'rgba(103, 58, 183, 0.1)',
   }),
 }));
@@ -332,33 +365,32 @@ const CompetitorAnalysisDashboard = () => {
           {showHeader && (
             <TableHead>
               <StyledTableRow>
-                <StyledTableCell isHeader>Metric</StyledTableCell>
-                <StyledTableCell isHeader>Market Average</StyledTableCell>
-                <StyledTableCell isHeader>{renderBrandHeader('Adidas')}</StyledTableCell>
-                <StyledTableCell isHeader>{renderBrandHeader('Nike')}</StyledTableCell>
-                <StyledTableCell isHeader>{renderBrandHeader('Puma')}</StyledTableCell>
-                <StyledTableCell isHeader>{renderBrandHeader('Reebok')}</StyledTableCell>
-                <StyledTableCell isHeader>{renderBrandHeader('Converse')}</StyledTableCell>
+                <HeaderTableCell>Metric</HeaderTableCell>
+                <HeaderTableCell>Market Average</HeaderTableCell>
+                <HeaderTableCell>{renderBrandHeader('Adidas')}</HeaderTableCell>
+                <HeaderTableCell>{renderBrandHeader('Nike')}</HeaderTableCell>
+                <HeaderTableCell>{renderBrandHeader('Puma')}</HeaderTableCell>
+                <HeaderTableCell>{renderBrandHeader('Reebok')}</HeaderTableCell>
+                <HeaderTableCell>{renderBrandHeader('Converse')}</HeaderTableCell>
               </StyledTableRow>
             </TableHead>
           )}
           <TableBody>
             {data.map((row) => (
               <StyledTableRow key={row.metric}>
-                <StyledTableCell>{row.metric}</StyledTableCell>
-                <StyledTableCell isMarketAvg>{row.marketAvg}</StyledTableCell>
-                <StyledTableCell brand="adidas">{row.adidas}</StyledTableCell>
-                <StyledTableCell brand="nike">{row.nike}</StyledTableCell>
-                <StyledTableCell brand="puma">{row.puma}</StyledTableCell>
-                <StyledTableCell brand="reebok">{row.reebok}</StyledTableCell>
-                <StyledTableCell brand="converse">{row.converse}</StyledTableCell>
+                <TableCell>{row.metric}</TableCell>
+                <MarketAvgTableCell>{row.marketAvg}</MarketAvgTableCell>
+                <BrandTableCell brandname="adidas">{row.adidas}</BrandTableCell>
+                <BrandTableCell brandname="nike">{row.nike}</BrandTableCell>
+                <BrandTableCell brandname="puma">{row.puma}</BrandTableCell>
+                <BrandTableCell brandname="reebok">{row.reebok}</BrandTableCell>
+                <BrandTableCell brandname="converse">{row.converse}</BrandTableCell>
               </StyledTableRow>
             ))}
           </TableBody>
         </Table>
       </StyledTableContainer>
     </Box>
-    
   );
 
   return (
