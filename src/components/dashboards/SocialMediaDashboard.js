@@ -33,7 +33,7 @@ ChartJS.register(
   ArcElement
 );
 
-const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
   color: "#fff",
