@@ -21,7 +21,8 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ReactMarkdown from "react-markdown";
 import { sendChatMessage } from "../../services/chatService";
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
+
 
 const MAX_MESSAGES = 10;
 const INITIAL_MESSAGE = {

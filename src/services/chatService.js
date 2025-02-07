@@ -1,8 +1,8 @@
-const API_BASE_URL = process.env.BASE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 export const sendChatMessage = async (message, onChunk) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
+        const response = await fetch(`${API_BASE_URL}/ai/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
