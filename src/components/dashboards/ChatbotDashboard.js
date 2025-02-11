@@ -24,7 +24,7 @@ import { sendChatMessage, loadChatHistory, saveChatHistory, clearChatHistory, se
 
 const MAX_MESSAGES = 10;
 const INITIAL_MESSAGE = {
-  text: '# Hai Mappers! 👋\nSaya siap membantu Anda menganalisis data dari database.',
+  text: '# Hai Analyst! 👋\nSaya siap membantu Anda menganalisis data dari database.',
   isUser: false,
   timestamp: new Date()
 };

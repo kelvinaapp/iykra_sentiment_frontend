@@ -11,8 +11,8 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 const LeftSidebarContainer = styled(Box)(({ theme }) => ({
   width: '250px',
   height: 'calc(100vh - 64px)', // Subtract navbar height
-  borderRight: '1px solid #e0e0e0',
-  backgroundColor: '#ffffff',
+  borderRight: `1px solid #607175`,
+  backgroundColor: '#FFFFFF',
   display: 'flex',
   flexDirection: 'column',
 }));
@@ -32,15 +32,16 @@ const StyledTabs = styled(Tabs)({
     left: 0,
     width: '3px',
     borderRadius: '0 2px 2px 0',
+    backgroundColor: '#0092F4',
   },
 });
 
 const StyledTab = styled(Tab)({
   width: '100%',
-  color: '#666666',
+  color: '#3A3D43',
   '&.Mui-selected': {
-    color: '#1976d2',
-    backgroundColor: 'rgba(25, 118, 210, 0.04)',
+    color: '#024CAA',
+    backgroundColor: 'rgba(119, 205, 255, 0.1)',
   },
   '& .MuiTab-wrapper': {
     flexDirection: 'row',

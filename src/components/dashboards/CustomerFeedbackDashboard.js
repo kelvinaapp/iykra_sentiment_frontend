@@ -45,10 +45,17 @@ ChartJS.register(
 );
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: "#fff",
-  backgroundColor: "#00897b",
+  color: "#FFFFFF",
+  backgroundColor: "#262B40",
   padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(2),
+}));
+
+const ChartCard = styled(Card)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+  height: "100%",
+  backgroundColor: '#FFFFFF',
+  // border: '1px solid #607175',
 }));
 
 const MetricCard = styled(Paper)(({ theme }) => ({
@@ -58,13 +65,8 @@ const MetricCard = styled(Paper)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
-  backgroundColor: theme.palette.primary.light,
-  color: theme.palette.primary.contrastText,
-}));
-
-const ChartCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-  height: "100%",
+  backgroundColor: '#FFF',
+  color: '#22262B',
 }));
 
 const CustomerFeedbackDashboard = () => {
@@ -87,7 +89,7 @@ const CustomerFeedbackDashboard = () => {
     datasets: [
       {
         data: [0, 0],
-        backgroundColor: ["#00897b", "#f44336"],
+        backgroundColor: ["#0092F4", "#262B40"],
       },
     ],
   });
@@ -116,12 +118,12 @@ const CustomerFeedbackDashboard = () => {
       {
         label: "Positive",
         data: [],
-        backgroundColor: "#00897b",
+        backgroundColor: "#0092F4",
       },
       {
         label: "Negative",
         data: [],
-        backgroundColor: "#f44336",
+        backgroundColor: "#262B40",
       },
     ],
   };
@@ -363,12 +365,12 @@ const CustomerFeedbackDashboard = () => {
               {
                 label: "Positive",
                 data: positiveData,
-                backgroundColor: "#00897b",
+                backgroundColor: "#0092F4",
               },
               {
                 label: "Negative",
                 data: negativeData,
-                backgroundColor: "#f44336",
+                backgroundColor: "#262B40",
               },
             ],
           };
@@ -425,7 +427,7 @@ const CustomerFeedbackDashboard = () => {
 
       {/* Overview Stats */}
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} md={3}>
           <MetricCard elevation={2}>
             <Box
@@ -440,7 +442,7 @@ const CustomerFeedbackDashboard = () => {
               <Typography variant="body1">Average Rating</Typography>
             </Box>
 
-            <Typography variant="h4">
+            <Typography variant="h5">
               {stats.averageRating} <span style={{ fontSize: '1rem' }}>/5</span>
             </Typography>
           </MetricCard>
@@ -461,7 +463,7 @@ const CustomerFeedbackDashboard = () => {
               <Typography variant="body1">Total Reviews</Typography>
             </Box>
 
-            <Typography variant="h4">{stats.totalReviews}</Typography>
+            <Typography variant="h5">{stats.totalReviews}</Typography>
           </MetricCard>
         </Grid>
 
@@ -480,7 +482,7 @@ const CustomerFeedbackDashboard = () => {
               <Typography variant="body1">Positive Reviews</Typography>
             </Box>
 
-            <Typography variant="h4">{stats.positiveCount}</Typography>
+            <Typography variant="h5">{stats.positiveCount}</Typography>
           </MetricCard>
         </Grid>
 
@@ -499,7 +501,7 @@ const CustomerFeedbackDashboard = () => {
               <Typography variant="body1">Negative Reviews</Typography>
             </Box>
 
-            <Typography variant="h4">{stats.negativeCount}</Typography>
+            <Typography variant="h5">{stats.negativeCount}</Typography>
           </MetricCard>
         </Grid>
       </Grid>
@@ -519,16 +521,16 @@ const CustomerFeedbackDashboard = () => {
                     {
                       label: 'Average Rating',
                       data: trendData.map(item => item.averageRating),
-                      borderColor: '#2196f3',
-                      backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                      borderColor: '#0092F4',
+                      backgroundColor: 'rgba(0, 146, 244, 0.1)',
                       yAxisID: 'rating',
                       tension: 0.4
                     },
                     {
                       label: 'Sentiment Score',
                       data: trendData.map(item => item.averageSentiment),
-                      borderColor: '#4caf50',
-                      backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                      borderColor: '#262B40',
+                      backgroundColor: 'rgba(98, 86, 202, 0.1)',
                       yAxisID: 'sentiment',
                       tension: 0.4
                     }
@@ -596,10 +598,10 @@ const CustomerFeedbackDashboard = () => {
         </ChartCard>
       </Grid>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {/* Sentiment Distribution */}
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -608,7 +610,7 @@ const CustomerFeedbackDashboard = () => {
 
               <Box
                 sx={{
-                  height: 300,
+                  height: 250,
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
@@ -635,13 +637,13 @@ const CustomerFeedbackDashboard = () => {
 
         {/* Volume Feedback per Kategori */}
 
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={5}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Review Emotion Intensity
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <Bar
                   data={{
                     labels: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'],
@@ -656,11 +658,11 @@ const CustomerFeedbackDashboard = () => {
                           emotionIntensity.veryHigh
                         ],
                         backgroundColor: [
-                          '#ef5350', // very low - red
-                          '#ff9800', // low - orange
-                          '#ffd54f', // moderate - yellow
-                          '#66bb6a', // high - light green
-                          '#2e7d32'  // very high - dark green
+                          '#87C2FF', // very low - light blue
+                          '#77CDFF', // low - light blue
+                          '#0092F4', // moderate - bright blue
+                          '#334092', // high - medium blue
+                          '#024CAA'  // very high - dark blue
                         ],
                       },
                     ],
@@ -710,7 +712,7 @@ const CustomerFeedbackDashboard = () => {
                 Total Sentimen per Aspek
               </Typography>
 
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <Bar
                   data={aspectSentimentData}
                   options={{
@@ -760,7 +762,7 @@ const CustomerFeedbackDashboard = () => {
 
         {/* Product Sentiment Analysis */}
 
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={3}>
           <ChartCard>
             <CardContent>
               <Box sx={{ mb: 3 }}>
@@ -793,7 +795,7 @@ const CustomerFeedbackDashboard = () => {
               <Grid container spacing={2}>
                 {["comfort", "quality", "durability", "design"].map(
                   (aspect) => (
-                    <Grid item xs={12} sm={6} md={3} key={aspect}>
+                    <Grid item xs={12} key={aspect}>
                       <Paper elevation={2} sx={{ p: 2 }}>
                         <Typography
                           variant="subtitle1"
@@ -874,7 +876,7 @@ const CustomerFeedbackDashboard = () => {
 
                                 height: "100%",
 
-                                bgcolor: "#00897b",
+                                bgcolor: "#0092F4",
                               }}
                             />
                           </Box>
@@ -890,7 +892,7 @@ const CustomerFeedbackDashboard = () => {
 
         {/* Aspect Sentiment Analysis with Filters */}
 
-        <Grid item xs={8}>
+        <Grid item xs={9}>
           <ChartCard>
             <CardContent>
               <Box sx={{ mb: 3 }}>
@@ -923,7 +925,7 @@ const CustomerFeedbackDashboard = () => {
                 </Grid>
               </Box>
 
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle1" gutterBottom align="center">
                     <b>Sentimen Kenyamanan</b>
@@ -1138,7 +1140,7 @@ const CustomerFeedbackDashboard = () => {
                     }}
                   >
                     <Box
-                      sx={{ width: 16, height: 16, bgcolor: "#00897b", mr: 1 }}
+                      sx={{ width: 16, height: 16, bgcolor: "#0092F4", mr: 1 }}
                     />
 
                     <Typography variant="body2">Positive</Typography>
@@ -1146,7 +1148,7 @@ const CustomerFeedbackDashboard = () => {
 
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <Box
-                      sx={{ width: 16, height: 16, bgcolor: "#f44336", mr: 1 }}
+                      sx={{ width: 16, height: 16, bgcolor: "#262B40", mr: 1 }}
                     />
 
                     <Typography variant="body2">Negative</Typography>
@@ -1157,8 +1159,70 @@ const CustomerFeedbackDashboard = () => {
           </ChartCard>
         </Grid>
 
+        {/* Rating vs Sentiment Correlation */}
+        <Grid item xs={12} md={5}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Rating vs Sentiment Correlation
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Scatter
+                  data={{
+                    datasets: [{
+                      label: 'Reviews',
+                      data: ratingCorrelation.map(item => ({
+                        x: item.rating,
+                        y: item.averageSentiment,
+                        r: Math.sqrt(item.reviewCount) * 5 // Size based on review count
+                      })),
+                      backgroundColor: 'rgba(33, 150, 243, 0.6)',
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Rating'
+                        },
+                        min: 0,
+                        max: 5
+                      },
+                      y: {
+                        title: {
+                          display: true,
+                          text: 'Average Sentiment Score'
+                        },
+                        min: 0,
+                        max: 1
+                      }
+                    },
+                    plugins: {
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const data = context.raw;
+                            return [
+                              `Rating: ${data.x}`,
+                              `Sentiment: ${data.y.toFixed(2)}`,
+                              `Reviews: ${ratingCorrelation[context.dataIndex].reviewCount}`
+                            ];
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
         {/* Top review topics */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -1221,76 +1285,14 @@ const CustomerFeedbackDashboard = () => {
           </ChartCard>
         </Grid>
 
-        {/* Rating vs Sentiment Correlation */}
-        <Grid item xs={12} md={6}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Rating vs Sentiment Correlation
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Scatter
-                  data={{
-                    datasets: [{
-                      label: 'Reviews',
-                      data: ratingCorrelation.map(item => ({
-                        x: item.rating,
-                        y: item.averageSentiment,
-                        r: Math.sqrt(item.reviewCount) * 5 // Size based on review count
-                      })),
-                      backgroundColor: 'rgba(33, 150, 243, 0.6)',
-                    }]
-                  }}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      x: {
-                        title: {
-                          display: true,
-                          text: 'Rating'
-                        },
-                        min: 0,
-                        max: 5
-                      },
-                      y: {
-                        title: {
-                          display: true,
-                          text: 'Average Sentiment Score'
-                        },
-                        min: 0,
-                        max: 1
-                      }
-                    },
-                    plugins: {
-                      tooltip: {
-                        callbacks: {
-                          label: function(context) {
-                            const data = context.raw;
-                            return [
-                              `Rating: ${data.x}`,
-                              `Sentiment: ${data.y.toFixed(2)}`,
-                              `Reviews: ${ratingCorrelation[context.dataIndex].reviewCount}`
-                            ];
-                          }
-                        }
-                      }
-                    }
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
         {/* Most Helpful Reviews */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Most Helpful Reviews
               </Typography>
-              <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
+              <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
                 {helpfulReviews.map((review, index) => (
                   <Box key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>

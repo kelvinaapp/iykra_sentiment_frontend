@@ -29,24 +29,24 @@ import { useDate } from '../../context/DateContext';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: '#fff',
-  backgroundColor: '#00695c',
+  color: "#FFFFFF",
+  backgroundColor: "#262B40",
   padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(2),
 }));
 
 const MetricCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  textAlign: 'center',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.primary.light,
-  color: theme.palette.primary.contrastText,
+  textAlign: "center",
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  backgroundColor: '#FFF',
+  color: '#22262B',
 }));
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#0092F4', '#334092', '#6256CA', '#77CDFF'];
 
 const SalesPerformanceDashboard = () => {
   const { selectedBrand } = useBrand();
@@ -132,30 +132,30 @@ const SalesPerformanceDashboard = () => {
         Sales Performance Dashboard
       </DashboardTitle>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {/* KPI Cards */}
         <Grid item xs={12} md={3}>
           <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
-            <Typography variant="h6">Total Sales</Typography>
-            <Typography variant="h5" sx={{ mt: '16px' }}>{formatCurrency(totalSales)}</Typography>
+            <Typography variant="h6" sx={{ mb: 1 }}>Total Sales</Typography>
+            <Typography variant="h5" >{formatCurrency(totalSales)}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
           <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
-            <Typography variant="h6">Average Order Value</Typography>
-            <Typography variant="h5" sx={{ mt: '16px' }}>{formatCurrency(avgOrderValue)}</Typography>
+            <Typography variant="h6" sx={{ mb: 1 }}>Average Order Value</Typography>
+            <Typography variant="h5" >{formatCurrency(avgOrderValue)}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
           <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
-            <Typography variant="h6">Return Rate</Typography>
-            <Typography variant="h5" sx={{ mt: '16px' }}>{overallReturnRate.toFixed(1)}%</Typography>
+            <Typography variant="h6" sx={{ mb: 1 }}>Return Rate</Typography>
+            <Typography variant="h5" >{overallReturnRate.toFixed(1)}%</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
           <MetricCard sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 1 }}>
-            <Typography variant="body1"><b>Repeat Purchase Score</b></Typography>
-            <Typography variant="h5" sx={{ mt: '16px' }}>{repeatPurchaseScore}%</Typography>
+            <Typography variant="h6" sx={{ mb: 1 }}><b>Repeat Purchase Score</b></Typography>
+            <Typography variant="h5" >{repeatPurchaseScore}%</Typography>
           </MetricCard>
         </Grid>
 
@@ -163,8 +163,8 @@ const SalesPerformanceDashboard = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e' }} gutterBottom>Daily Sales Trend</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <Typography variant="h6" sx={{ color: '#22262B' }} gutterBottom>Daily Sales Trend</Typography>
+              <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={dailySalesData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
@@ -183,7 +183,7 @@ const SalesPerformanceDashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="orderValue" 
-                    stroke="#8884d8" 
+                    stroke="#0092F4" 
                     name="Sales Value" 
                     strokeWidth={2}
                   />
@@ -197,15 +197,15 @@ const SalesPerformanceDashboard = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e' }} gutterBottom>Order Volume by Category</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <Typography variant="h6" sx={{ color: '#22262B' }} gutterBottom>Order Volume by Category</Typography>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={productCategoryData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="category" 
                     interval={0}
-                    angle={-45}
-                    textAnchor="end"
+                    // angle={-45}
+                    // textAnchor="end"
                     height={80}
                     tick={{ fontSize: 11 }}
                     dy={10}
@@ -219,7 +219,7 @@ const SalesPerformanceDashboard = () => {
                   <Legend 
                     wrapperStyle={{ fontSize: 11 }}
                   />
-                  <Bar dataKey="volume" fill="#82ca9d" name="Order Volume" />
+                  <Bar dataKey="volume" fill="#0D92F4" name="Order Volume" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -230,8 +230,8 @@ const SalesPerformanceDashboard = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e' }} gutterBottom>Return Rate by Category</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <Typography variant="h6" sx={{ color: '#22262B' }} gutterBottom>Return Rate by Category</Typography>
+              <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
                     data={returnRateData}
@@ -265,8 +265,8 @@ const SalesPerformanceDashboard = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e' }} gutterBottom>Customer Locations</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <Typography variant="h6" sx={{ color: '#22262B' }} gutterBottom>Customer Locations</Typography>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={locationData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
@@ -284,7 +284,7 @@ const SalesPerformanceDashboard = () => {
                   <Legend 
                     wrapperStyle={{ fontSize: 11 }}
                   />
-                  <Bar dataKey="customers" fill="#8884d8" name="Customers" />
+                  <Bar dataKey="customers" fill="#262B40" name="Customers" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -295,8 +295,8 @@ const SalesPerformanceDashboard = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e' }} gutterBottom>Gender Distribution</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <Typography variant="h6" sx={{ color: '#22262B' }} gutterBottom>Gender Distribution</Typography>
+              <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
                     data={genderData}
@@ -329,8 +329,8 @@ const SalesPerformanceDashboard = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: '#1a237e' }} gutterBottom>Age Distribution</Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <Typography variant="h6" sx={{ color: '#22262B' }} gutterBottom>Age Distribution</Typography>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={ageData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
@@ -346,7 +346,7 @@ const SalesPerformanceDashboard = () => {
                   <Legend 
                     wrapperStyle={{ fontSize: 11 }}
                   />
-                  <Bar dataKey="value" fill="#8884d8" name="Percentage" />
+                  <Bar dataKey="value" fill="#0092F4" name="Percentage" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

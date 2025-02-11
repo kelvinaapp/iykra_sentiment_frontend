@@ -10,13 +10,9 @@ import SearchIcon from '@mui/icons-material/Search';
 // Styled components
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-
-  backgroundColor: 'white',
-
+  backgroundColor: '#FFFFFF',
   boxShadow: 'none',
-
-  borderBottom: '1px solid #e0e0e0',
-
+  borderBottom: `1px solid #607175`,
 }));
 
 
@@ -32,7 +28,7 @@ const LogoContainer = styled('div')({
 
   '& img': {
 
-    height: '30px',
+    height: '36px',
 
     width: 'auto',
 
@@ -42,98 +38,56 @@ const LogoContainer = styled('div')({
 
 
 const Search = styled('div')(({ theme }) => ({
-
   position: 'relative',
-
   borderRadius: theme.shape.borderRadius,
-
-  backgroundColor: alpha(theme.palette.common.black, 0.05),
-
+  backgroundColor: alpha('#222628', 0.05),
   '&:hover': {
-
-    backgroundColor: alpha(theme.palette.common.black, 0.1),
-
+    backgroundColor: alpha('#222628', 0.1),
   },
-
   marginRight: theme.spacing(2),
-
   marginLeft: '24px',
-
   width: '300px',
-
   [theme.breakpoints.up('sm')]: {
-
     width: '300px',
-
   },
-
 }));
 
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
-
   padding: theme.spacing(0, 2),
-
   height: '100%',
-
   position: 'absolute',
-
   pointerEvents: 'none',
-
   display: 'flex',
-
   alignItems: 'center',
-
   justifyContent: 'center',
-
-  color: '#757575',
-
+  color: '#3A3D43',
   zIndex: 1,
-
 }));
 
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
-
   width: '100%',
-
   '& .MuiInputBase-root': {
-
     padding: theme.spacing(1, 1, 1, 0),
-
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-
     width: '100%',
-
     color: '#333333',
-
   },
-
 }));
 
 
 const DateFilterGroup = styled(ButtonGroup)(({ theme }) => ({
-
   marginLeft: theme.spacing(2),
-
   '& .MuiButton-root': {
-
     textTransform: 'none',
-
     color: '#666666',
-
     borderColor: '#e0e0e0',
-
     '&.active': {
-
       backgroundColor: alpha(theme.palette.primary.main, 0.1),
-
       color: theme.palette.primary.main,
-
     },
-
   },
-
 }));
 
 

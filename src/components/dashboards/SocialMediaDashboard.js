@@ -36,15 +36,17 @@ ChartJS.register(
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: "#fff",
-  backgroundColor: "#00897b",
+  color: "#FFFFFF",
+  backgroundColor: "#262B40",
   padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(2),
 }));
 
 const ChartCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(2),
   height: "100%",
+  backgroundColor: '#FFFFFF',
+  // border: '1px solid #607175',
 }));
 
 const MetricCard = styled(Paper)(({ theme }) => ({
@@ -54,8 +56,8 @@ const MetricCard = styled(Paper)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
-  backgroundColor: theme.palette.primary.light,
-  color: theme.palette.primary.contrastText,
+  backgroundColor: '#FFF',
+  color: '#22262B',
 }));
 
 const SocialMediaDashboard = () => {
@@ -100,7 +102,22 @@ const SocialMediaDashboard = () => {
   });
   const [platformPerformance, setPlatformPerformance] = useState({
     labels: [],
-    datasets: []
+    datasets: [
+      {
+        label: 'Engagement',
+        data: [],
+        backgroundColor: '#0092F4',
+        borderColor: '#0092F4',
+        borderWidth: 1
+      },
+      {
+        label: 'Reach',
+        data: [],
+        backgroundColor: '#6256CA ',
+        borderColor: '#6256CA ',
+        borderWidth: 1
+      }
+    ]
   });
   const [topPostsByReach, setTopPostsByReach] = useState([]);  
   const [topPostsByEngagement, setTopPostsByEngagement] = useState([]);  
@@ -119,8 +136,8 @@ const SocialMediaDashboard = () => {
       datasets: [{
         label: "Engagement Level",
         data: [20, 45, 65, 85, 95, 75],
-        backgroundColor: "#00695c",
-        borderColor: "#00695c",
+        backgroundColor: "#0D92F4",
+        borderColor: "#0D92F4",
         tension: 0.4
       }]
   });
@@ -175,8 +192,8 @@ const SocialMediaDashboard = () => {
           datasets: [{
             label: "Engagement",
             data: engagementDataset?.data || [],
-            borderColor: "#00897b",
-            backgroundColor: "rgba(0, 137, 123, 0.1)",
+            borderColor: "#0092F4",
+            backgroundColor: "rgba(0, 146, 244, 0.1)",
             tension: 0.4,
             fill: true
           }]
@@ -187,8 +204,8 @@ const SocialMediaDashboard = () => {
           datasets: [{
             label: "Reach",
             data: reachDataset?.data || [],
-            borderColor: "#2196f3",
-            backgroundColor: "rgba(33, 150, 243, 0.1)",
+            borderColor: "#262B40",
+            backgroundColor: "rgba(51, 64, 146, 0.1)",
             tension: 0.4,
             fill: true
           }]
@@ -201,8 +218,8 @@ const SocialMediaDashboard = () => {
               label: "Engagement Rate",
               data: contentData.engagement.datasets[0].data,
               rate: contentData.engagement.datasets[0].rate,
-              backgroundColor: "#00897b",
-              borderColor: "#00897b",
+              backgroundColor: "#0D92F4",
+              borderColor: "#0D92F4",
               barThickness: 30
             }]
           },
@@ -212,13 +229,30 @@ const SocialMediaDashboard = () => {
               label: "Reach Rate",
               data: contentData.reach.datasets[0].data,
               rate: contentData.reach.datasets[0].rate,
-              backgroundColor: "#2196f3",
-              borderColor: "#2196f3",
+              backgroundColor: "#262B40",
+              borderColor: "#262B40",
               barThickness: 30
             }]
           }
         });
-        setPlatformPerformance(platformData);
+        // Process platform performance data with our color scheme
+        setPlatformPerformance({
+          labels: platformData.labels,
+          datasets: [
+            {
+              ...platformData.datasets[0],
+              backgroundColor: '#6256CA',
+              borderColor: '#6256CA',
+              borderWidth: 1
+            },
+            {
+              ...platformData.datasets[1],
+              backgroundColor: '#262B40',
+              borderColor: '#262B40',
+              borderWidth: 1
+            }
+          ]
+        });
         setTopPostsByReach(postsReachData);
         setTopPostsByEngagement(postsEngagementData);
         setTopHashtags(hashtagsData);
@@ -278,7 +312,7 @@ const SocialMediaDashboard = () => {
       </DashboardTitle>
 
       {/* Overview Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
 
         <Grid item xs={12} md={4}>
           <MetricCard>
@@ -286,8 +320,8 @@ const SocialMediaDashboard = () => {
               <VisibilityIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Reach</Typography>
             </Box>
-            <Typography variant="h4">
-              {metrics.reach ? formatNumber(parseFloat(metrics.reach.replace(/[KMB]/g, ""))) : "N/A"}
+            <Typography variant="h5" sx={{ mb: 1 }}>
+              {metrics.reach ? formatNumber(parseFloat(metrics.reach)) : "N/A"}
             </Typography>
             <Typography variant="body2">Total Viewers</Typography>
           </MetricCard>
@@ -298,8 +332,8 @@ const SocialMediaDashboard = () => {
               <ThumbUpIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Total Engagement</Typography>
             </Box>
-            <Typography variant="h4">
-              {metrics.totalEngagement ? formatNumber(parseFloat(metrics.totalEngagement.replace(/[KMB]/g, ""))) : "N/A"}
+            <Typography variant="h5" sx={{ mb: 1 }}>
+              {metrics.totalEngagement ? formatNumber(parseFloat(metrics.totalEngagement)) : "N/A"}
             </Typography>
             <Typography variant="body2">Likes & Comments</Typography>
           </MetricCard>
@@ -310,7 +344,7 @@ const SocialMediaDashboard = () => {
               <CommentIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Total Posts</Typography>
             </Box>
-            <Typography variant="h4">
+            <Typography variant="h5" sx={{ mb: 1 }}>
               {metrics.totalPosts ? formatNumber(parseInt(metrics.totalPosts)) : "N/A"}
             </Typography>
             <Typography variant="body2">All Content Types</Typography>
@@ -319,7 +353,7 @@ const SocialMediaDashboard = () => {
       </Grid>
 
       {/* Engagement Trends */}
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
 
         <Grid item xs={12} md={6}>
           <ChartCard>
@@ -570,7 +604,7 @@ const SocialMediaDashboard = () => {
         <Grid item xs={12} md={6}>
           <ChartCard>
             <CardContent>
-              <Typography variant="h6" gutterBottom color="primary">
+              <Typography variant="h6" gutterBottom color="#22262B">
                 Top 5 Posts by Reach
               </Typography>
               <Box>
@@ -618,7 +652,7 @@ const SocialMediaDashboard = () => {
         <Grid item xs={12} md={6}>
           <ChartCard>
             <CardContent>
-              <Typography variant="h6" gutterBottom color="primary">
+              <Typography variant="h6" gutterBottom color="#22262B">
                 Top 5 Posts by Engagement
               </Typography>
               <Box>
@@ -664,12 +698,12 @@ const SocialMediaDashboard = () => {
 
         {/* Top Hashtags and Collaborators Section */}
         <Grid item xs={12}>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {/* Top Hashtags by Reach */}
             <Grid item xs={12} md={3}>
             <ChartCard>
               <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
+                <Typography variant="h6" gutterBottom color="#22262B">
                   Top Hashtags by Reach
                 </Typography>
                 <Box>
@@ -711,7 +745,7 @@ const SocialMediaDashboard = () => {
             <Grid item xs={12} md={3}>
             <ChartCard>
               <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
+                <Typography variant="h6" gutterBottom color="#22262B">
                   Top Hashtags by Engagement
                 </Typography>
                 <Box>
@@ -753,7 +787,7 @@ const SocialMediaDashboard = () => {
             <Grid item xs={12} md={3}>
             <ChartCard>
               <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
+                <Typography variant="h6" gutterBottom color="#22262B">
                   Top Collaborators by Reach
                 </Typography>
                 <Box>
@@ -795,7 +829,7 @@ const SocialMediaDashboard = () => {
             <Grid item xs={12} md={3}>
             <ChartCard>
               <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
+                <Typography variant="h6" gutterBottom color="#22262B">
                   Top Collaborators by Engagement
                 </Typography>
                 <Box>

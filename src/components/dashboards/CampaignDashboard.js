@@ -32,32 +32,28 @@ ChartJS.register(
 );
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: '#1a237e',
-  borderBottom: `2px solid ${theme.palette.primary.main}`,
+  color: "#FFFFFF",
+  backgroundColor: "#262B40",
   padding: theme.spacing(2),
-  marginBottom: theme.spacing(3),
+  marginBottom: theme.spacing(2),
 }));
 
 const ChartCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-  height: '100%',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  marginBottom: theme.spacing(2),
+  height: "100%",
+  backgroundColor: '#FFFFFF',
+  // border: '1px solid #607175',
 }));
 
 const MetricCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  textAlign: 'center',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.background.paper,
-  color: theme.palette.text.primary,
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    transition: 'transform 0.3s ease-in-out',
-  },
+  textAlign: "center",
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  backgroundColor: '#FFF',
+  color: '#22262B',
 }));
 
 const CampaignDashboard = () => {
@@ -88,11 +84,11 @@ const CampaignDashboard = () => {
       label: 'Engagement Rate',
       data: [4.2, 5.1, 6.3, 3.8, 2.9],
       backgroundColor: [
-        '#4267B2',
-        '#E1306C',
-        '#69C9D0',
-        '#1DA1F2',
-        '#0077B5',
+        '#0092F4',
+        '#334092',
+        '#6256CA',
+        '#77CDFF',
+        '#87C2FF',
       ],
     }],
   };
@@ -103,7 +99,7 @@ const CampaignDashboard = () => {
     datasets: [{
       label: 'Engagement',
       data: [1200, 1900, 2100, 2800, 2400, 2900],
-      borderColor: '#3f51b5',
+      borderColor: '#0092F4',
       tension: 0.4,
       fill: false,
     }],
@@ -114,7 +110,7 @@ const CampaignDashboard = () => {
     labels: ['Positive', 'Neutral', 'Negative'],
     datasets: [{
       data: [65, 25, 10],
-      backgroundColor: ['#4caf50', '#ff9800', '#f44336'],
+      backgroundColor: ['#0092F4', '#77CDFF', '#334092'],
     }],
   };
 
@@ -125,11 +121,11 @@ const CampaignDashboard = () => {
       label: 'Age Distribution',
       data: [25, 35, 20, 15, 5],
       backgroundColor: [
-        '#7986cb',
-        '#64b5f6',
-        '#4fc3f7',
-        '#4dd0e1',
-        '#4db6ac',
+        '#0092F4',
+        '#334092',
+        '#6256CA',
+        '#77CDFF',
+        '#87C2FF',
       ],
     }],
   };
@@ -141,34 +137,34 @@ const CampaignDashboard = () => {
       </DashboardTitle>
 
       {/* Campaign Overview */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} md={3}>
           <MetricCard>
-            <Typography variant="h6">Campaign Name</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>Campaign Name</Typography>
             <Typography variant="h5">{campaignInfo.name}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
           <MetricCard>
-            <Typography variant="h6">Total Budget</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>Total Budget</Typography>
             <Typography variant="h5">{campaignInfo.budget}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
           <MetricCard>
-            <Typography variant="h6">Total Reach</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>Total Reach</Typography>
             <Typography variant="h5">{campaignInfo.reach}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={3}>
           <MetricCard>
-            <Typography variant="h6">Engagement Progress</Typography>
-            <Box sx={{ width: '100%', mt: 2 }}>
+            <Typography variant="h6" sx={{mb : 1}}>Engagement Progress</Typography>
+            <Box sx={{ width: '100%', mt: 1 }}>
               <GaugeChart
                 id="engagement-gauge"
                 nrOfLevels={3}
                 percent={campaignInfo.actualEngagement}
-                colors={['#ff0000', '#ffbf00', '#00ff00']}
+                colors={['#607175   ', '#6256CA', '#0092F4']}
               />
             </Box>
           </MetricCard>
@@ -176,68 +172,44 @@ const CampaignDashboard = () => {
       </Grid>
 
       {/* Performance Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} md={2.4}>
           <MetricCard>
-            <Typography variant="h6">CPE</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>CPE</Typography>
             <Typography variant="h5">{metrics.cpe}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={2.4}>
           <MetricCard>
-            <Typography variant="h6">CTR</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>CTR</Typography>
             <Typography variant="h5">{metrics.ctr}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={2.4}>
           <MetricCard>
-            <Typography variant="h6">Conversion Rate</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>Conversion Rate</Typography>
             <Typography variant="h5">{metrics.conversionRate}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={2.4}>
           <MetricCard>
-            <Typography variant="h6">Revenue</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>Revenue</Typography>
             <Typography variant="h5">{metrics.revenueGenerated}</Typography>
           </MetricCard>
         </Grid>
         <Grid item xs={12} md={2.4}>
           <MetricCard>
-            <Typography variant="h6">ROI</Typography>
+            <Typography variant="h6" sx={{mb : 1}}>ROI</Typography>
             <Typography variant="h5">{metrics.roi}</Typography>
           </MetricCard>
         </Grid>
       </Grid>
 
       {/* Charts */}
-      <Grid container spacing={3}>
-        {/* Platform Performance */}
-        <Grid item xs={12} md={6}>
-          <ChartCard>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Platform Performance
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <Bar
-                  data={platformData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false,
-                      },
-                    },
-                  }}
-                />
-              </Box>
-            </CardContent>
-          </ChartCard>
-        </Grid>
-
+      <Grid container spacing={2}>
+        
         {/* Engagement Trend */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={12}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -256,14 +228,39 @@ const CampaignDashboard = () => {
           </ChartCard>
         </Grid>
 
+        {/* Platform Performance */}
+        <Grid item xs={12} md={4}>
+          <ChartCard>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Platform Performance
+              </Typography>
+              <Box sx={{ height: 250 }}>
+                <Bar
+                  data={platformData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </ChartCard>
+        </Grid>
+
         {/* Sentiment Analysis */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Sentiment Analysis
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <Doughnut
                   data={sentimentData}
                   options={{
@@ -277,13 +274,13 @@ const CampaignDashboard = () => {
         </Grid>
 
         {/* Age Demographics */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <ChartCard>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Age Demographics
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <Pie
                   data={ageGroupData}
                   options={{

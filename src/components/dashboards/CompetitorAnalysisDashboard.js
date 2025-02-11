@@ -138,11 +138,9 @@ const StyledTableRow = styled(TableRow)({
 });
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  backgroundColor: '#00897b',
-  color: theme.palette.common.white,
+  color: "#FFFFFF",
+  backgroundColor: "#262B40",
   padding: theme.spacing(2),
-  fontSize: '1.5rem',
-  fontWeight: 400,
   marginBottom: theme.spacing(2),
 }));
 
@@ -395,7 +393,7 @@ const CompetitorAnalysisDashboard = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <DashboardTitle>
+      <DashboardTitle variant="h5">
         Competitor Analysis Dashboard
       </DashboardTitle>
 

@@ -54,26 +54,28 @@ ChartJS.register(
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 const DashboardTitle = styled(Typography)(({ theme }) => ({
-  color: "#fff", 
-  backgroundColor: "#00897b", 
-  padding: theme.spacing(2), 
-  marginBottom: theme.spacing(3),
+  color: "#FFFFFF",
+  backgroundColor: "#262B40",
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(2),
 }));
 
 const ChartCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(3), 
+  marginBottom: theme.spacing(2),
   height: "100%",
+  backgroundColor: '#FFFFFF',
+  // border: '1px solid #607175',
 }));
 
 const MetricCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2), 
-  textAlign: "center", 
-  height: "100%", 
-  display: "flex", 
-  flexDirection: "column", 
-  justifyContent: "center", 
-  backgroundColor: theme.palette.primary.light, 
-  color: theme.palette.primary.contrastText,
+  padding: theme.spacing(2),
+  textAlign: "center",
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  backgroundColor: '#FFF',
+  color: '#22262B',
 }));
 
 const SentimentDashboard = () => {
@@ -159,12 +161,12 @@ const SentimentDashboard = () => {
         {
           label: 'Positive',
           data: positiveData,
-          backgroundColor: '#4caf50',
+          backgroundColor: '#0092F4',
         },
         {
           label: 'Negative',
           data: negativeData,
-          backgroundColor: '#f44336',
+          backgroundColor: '#262B40',
         },
       ],
     };
@@ -189,7 +191,7 @@ const SentimentDashboard = () => {
           datasets: Object.entries(platformData).map(([platform, data]) => ({
             label: platform, 
             data: [data.positive, data.negative], 
-            backgroundColor: platform === "Instagram" ? "#E4405F" : "#000000",
+            backgroundColor: platform === "Instagram" ? "#6256CA" : "#262B40",
           })),
         });
 
@@ -199,16 +201,16 @@ const SentimentDashboard = () => {
             {
               label: "Positive", 
               data: timeSeriesResult.positive, 
-              borderColor: "#00897b", 
-              backgroundColor: "rgba(0, 137, 123, 0.1)", 
+              borderColor: "#0092F4", 
+              backgroundColor: "rgba(0, 146, 244, 0.1)", 
               tension: 0.4, 
               fill: true,
             },
             {
               label: "Negative", 
               data: timeSeriesResult.negative, 
-              borderColor: "#f44336", 
-              backgroundColor: "rgba(244, 67, 54, 0.1)", 
+              borderColor: "#262B40", 
+              backgroundColor: "rgba(98, 86, 202, 0.1)", 
               tension: 0.4, 
               fill: true,
             },
@@ -244,7 +246,7 @@ const SentimentDashboard = () => {
       </DashboardTitle>
 
       {/* Overview Stats */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} md={4}>
           <MetricCard>
             <Box
@@ -258,7 +260,7 @@ const SentimentDashboard = () => {
               <PostAddIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Total Posts</Typography>
             </Box>
-            <Typography variant="h4">
+            <Typography variant="h5">
               {formatNumber(overviewData.totalPosts)}
             </Typography>
           </MetricCard>
@@ -276,7 +278,7 @@ const SentimentDashboard = () => {
               <CommentIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Total Comments</Typography>
             </Box>
-            <Typography variant="h4">
+            <Typography variant="h5">
               {formatNumber(overviewData.totalComments)}
             </Typography>
           </MetricCard>
@@ -294,14 +296,14 @@ const SentimentDashboard = () => {
               <ThumbUpIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Total Engagement</Typography>
             </Box>
-            <Typography variant="h4">
+            <Typography variant="h5">
               {formatNumber(overviewData.totalEngagement)}
             </Typography>
           </MetricCard>
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
 
         {/* Time Series Sentiment */}
         <Grid item xs={12} md={12}>
@@ -351,7 +353,7 @@ const SentimentDashboard = () => {
                     <Typography variant="h6" gutterBottom>
                       Sentiment Distribution
                     </Typography>
-                    <Box sx={{ height: 300 }}>
+                    <Box sx={{ height: 250 }}>
                       <Pie
                         data={{
                           labels: ["Positif", "Negatif"], 
@@ -361,7 +363,7 @@ const SentimentDashboard = () => {
                                 overviewData.sentimentDistribution.positive/100, 
                                 overviewData.sentimentDistribution.negative/100,
                               ], 
-                              backgroundColor: ["#00897b", "#f44336"],
+                              backgroundColor: ["#0092F4", "#262B40"],
                             },
                           ],
                         }}
@@ -382,7 +384,7 @@ const SentimentDashboard = () => {
               <Typography variant="h6" gutterBottom>
                 Sentiment by Platform
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <Bar
                   data={platformSentimentData}
                   options={{
@@ -407,7 +409,7 @@ const SentimentDashboard = () => {
               <Typography variant="h6" gutterBottom>
                 Sentiment by Content Type
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 {contentSentiment && contentSentiment.datasets ? (
                   <Bar
                     data={contentSentiment}
@@ -458,7 +460,7 @@ const SentimentDashboard = () => {
         <Grid item xs={12}>
           <ChartCard>
             <CardContent>
-              <Typography variant="h6" gutterBottom color="primary">
+              <Typography variant="h6" gutterBottom color="#22262B">
                 Top 5 Comments with Highest Sentiment
               </Typography>
               {topComments.map((comment, index) => (
@@ -520,7 +522,7 @@ const SentimentDashboard = () => {
               <Typography variant="h6" gutterBottom color="primary">
                 Top 10 Positive Keywords
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <ReactWordcloud
                   words={keywordsData.positive}
                   options={wordcloudOptions}
@@ -536,7 +538,7 @@ const SentimentDashboard = () => {
               <Typography variant="h6" gutterBottom color="error">
                 Top 10 Negative Keywords
               </Typography>
-              <Box sx={{ height: 300 }}>
+              <Box sx={{ height: 250 }}>
                 <ReactWordcloud
                   words={keywordsData.negative}
                   options={wordcloudOptions}
@@ -552,7 +554,7 @@ const SentimentDashboard = () => {
               <Typography variant="h6" gutterBottom>
                 Trending Hashtags
               </Typography>
-              <List>
+              <List sx={{ height: 250 }}>
                 {trendingHashtags.map((hashtag, index) => (
                   <ListItem
                     key={index}
