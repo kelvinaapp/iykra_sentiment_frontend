@@ -19,9 +19,7 @@ import SendIcon from "@mui/icons-material/Send";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ReactMarkdown from "react-markdown";
-import { sendChatMessage } from "../../services/chatService";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
+import { sendChatMessage, loadChatHistory, saveChatHistory, clearChatHistory, sendResetSession } from "../../services/chatService";
 
 
 const MAX_MESSAGES = 10;
@@ -190,16 +188,20 @@ const prebuiltPrompts = [
 ];
 
 const ChatbotDashboard = () => {
-  const [messages, setMessages] = useState([INITIAL_MESSAGE]);
+  const [messages, setMessages] = useState(() => {
+    const savedHistory = loadChatHistory();
+    return savedHistory || [INITIAL_MESSAGE];
+  });
   const [input, setInput] = useState('');
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
 
   const memoizedMessages = useMemo(() => {
     const recentMessages = messages.slice(-MAX_MESSAGES);
-    console.log(`Chat history size: ${messages.length} messages, displaying last ${recentMessages.length}`);
+    // console.log(`Chat history size: ${messages.length} messages, displaying last ${recentMessages.length}`);
     return recentMessages;
   }, [messages]);
 
@@ -225,8 +227,14 @@ const ChatbotDashboard = () => {
     scrollToBottom();
   }, [memoizedMessages, scrollToBottom]);
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      saveChatHistory(messages);
+    }
+  }, [messages]);
+
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || sessionExpired) return;
 
     const userMessage = { text: input, isUser: true, timestamp: new Date() };
     const aiMessage = { text: "", isUser: false, isTyping: true, timestamp: new Date() };
@@ -267,27 +275,30 @@ const ChatbotDashboard = () => {
       });
     } catch (error) {
       console.error('Error in chat:', error);
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const aiMessageIndex = newMessages.length - 1;
-        newMessages[aiMessageIndex] = {
-          ...newMessages[aiMessageIndex],
-          text: "Maaf, terjadi kesalahan dalam memproses pesan Anda. Silakan coba lagi.",
-          isTyping: false,
-          isError: true
-        };
-        return newMessages.length > MAX_MESSAGES ? newMessages.slice(-MAX_MESSAGES) : newMessages;
-      });
+      if (error.message === "Your Session is expired" || error.message === "Your Session is Invalid") {
+        setSessionExpired(true);
+        setMessages(prev => [...prev, {
+          text: "⚠️ Session has expired. Please reset the chat to start a new conversation.",
+          isUser: false,
+          timestamp: new Date(),
+        }]);
+      } else {
+        setMessages(prev => [...prev, {
+          text: "❌ Error: " + error.message,
+          isUser: false,
+          timestamp: new Date(),
+        }]);
+      }
     }
   };
 
   const handleReset = () => setOpenConfirmDialog(true);
   const handleConfirmReset = () => {
-    fetch(`${API_BASE_URL}/ai/chat/reset`, {
-      method: 'POST',
-    });
+    sendResetSession();
     setMessages([INITIAL_MESSAGE]);
+    clearChatHistory();
     setOpenConfirmDialog(false);
+    setSessionExpired(false);
   };
   const handleCancelReset = () => setOpenConfirmDialog(false);
   const handlePromptClick = (event) => setAnchorEl(event.currentTarget);
@@ -324,6 +335,7 @@ const ChatbotDashboard = () => {
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
               },
+              ...(sessionExpired && { color: '#f44336' }),
             }}
           >
             Reset Chat
@@ -373,9 +385,10 @@ const ChatbotDashboard = () => {
             }
           }}
           placeholder="Ketik pesan..."
+          disabled={sessionExpired}
           InputProps={{
             endAdornment: (
-              <IconButton onClick={handleSend} sx={{ color: '#fff' }}>
+              <IconButton onClick={handleSend} sx={{ color: '#fff' }} disabled={sessionExpired}>
                 <SendIcon />
               </IconButton>
             ),
