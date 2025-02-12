@@ -39,26 +39,26 @@ export const clearChatHistory = () => {
 // Get session ID from localStorage
 export const getSessionId = () => {
     const sessionId = localStorage.getItem('session-id');
-    // console.log(' Current session ID:', sessionId || 'None');
+    console.log(' Current session ID:', sessionId || 'None');
     return sessionId;
 };
 
 // Save session ID to localStorage
 export const saveSessionId = (sessionId) => {
-    // console.log(' Saving session ID:', sessionId);
+    console.log(' Saving session ID:', sessionId);
     localStorage.setItem('session-id', sessionId);
 };
 
 // Clear session ID from localStorage
 export const clearSessionId = () => {
-    // console.log(' Clearing session ID');
+    console.log(' Clearing session ID');
     localStorage.removeItem('session-id');
 };
 
 export const sendChatMessage = async (message, onChunk) => {
     try {
         const sessionId = getSessionId();
-        // console.log('📤 Sending message with session ID:', sessionId || 'None');
+        console.log('📤 Sending message with session ID:', sessionId || 'None');
         
         const response = await fetch(`${API_BASE_URL}/ai/chat`, {
             method: 'POST',
@@ -71,7 +71,7 @@ export const sendChatMessage = async (message, onChunk) => {
 
         if (!response.ok) {
             if (response.status === 401) {
-                // Session expired, clear the session
+                //Session expired, clear the session
                 clearSessionId();
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Session expired');
@@ -82,7 +82,7 @@ export const sendChatMessage = async (message, onChunk) => {
         // Save the new session ID if provided
         const newSessionId = response.headers.get('session-id');
         if (newSessionId) {
-            // console.log('📥 Received new session ID:', newSessionId);
+            console.log('📥 Received new session ID:', newSessionId);
             saveSessionId(newSessionId);
         } else {
             console.warn('⚠️ No session ID received in response headers');
