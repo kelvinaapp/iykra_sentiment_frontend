@@ -128,7 +128,7 @@ const SalesPerformanceDashboard = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <DashboardTitle variant="h4" gutterBottom>
+      <DashboardTitle variant="h5" gutterBottom>
         Sales Performance Dashboard
       </DashboardTitle>
 
